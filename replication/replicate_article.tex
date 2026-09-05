@@ -1,0 +1,76 @@
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx,booktabs,amsmath,xcolor}
+\title{The Microstructure of Wealth Transfer in Prediction Markets}
+\author{Jonathan Becker}
+\date{January 18, 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+We analyze 72.1 million transactions executed on Kalshi, a CFTC-regulated prediction market, from June 2021 through November 2025. Aggregate prices are well calibrated, but calibration conceals a persistent internal transfer. YES contracts underperform NO contracts of equivalent cost basis, especially at longshot prices; we call the premium paid by affirmative-framed order flow the \textit{optimism tax}. Liquidity takers earn mean excess returns of $-1.12\%$ per trade while makers earn $+1.12\%$. The gap varies from 0.17 percentage points in Finance to more than 7 points in Media and World Events, and widened after the 2024 election as volume attracted professional liquidity providers.
+\end{abstract}
+\textbf{Keywords:} prediction markets, market microstructure, longshot bias, liquidity, optimism tax
+
+\section{Prediction markets and Kalshi}
+Prediction markets trade binary contracts that settle at either $\$1$ or $\$0$. A price of 5 cents is conventionally interpreted as a 5\% probability. Because each position has an offsetting counterparty, the market is zero-sum before fees: one participant's gain is another's loss.
+
+Kalshi launched in 2021 as a CFTC-regulated U.S. prediction market. Its growth accelerated around the 2024 election cycle and its expansion into politics and sports. The data end at 2025-11-25 17:00 ET; Q4 2025 is incomplete.
+
+\subsection{Data and definitions}
+The underlying project records market resolution, execution price, taker side, number of contracts, and execution time. Analyses use resolved YES/NO markets and exclude voided, delisted, open, and very-low-volume markets. For a trade at price $p_i$ cents and binary outcome $o_i$, mispricing of subset $S$ is
+\[
+\delta_S=\frac{1}{|S|}\sum_{i\in S}o_i-\frac{1}{|S|}\sum_{i\in S}\frac{p_i}{100}.
+\]
+Gross excess return relative to capital at risk is $r_i=(100o_i-p_i)/p_i$. To compare affirmative and negative contracts fairly, price means cost basis: a 5-cent YES and a 5-cent NO each risk five cents for the same one-dollar payoff.
+
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/win_rate_by_price.png}\caption{Market calibration: actual win rate versus contract price.}\end{figure}
+
+\section{The longshot bias}
+The longshot bias is the tendency to overpay for low-probability outcomes. On Kalshi, contracts at 5 cents win about 4.18\% of the time, below the implied 5\%; contracts at 95 cents win about 95.83\%. The error is concentrated in the tails.
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/mispricing_by_price.png}\caption{Mispricing by contract price for takers, makers, and the combined market.}\end{figure}
+
+\section{The maker-taker wealth transfer}
+A liquidity maker posts resting liquidity; a taker executes against it. Every Kalshi trade identifies the taker and makes the maker the counterparty in the opposite direction.
+\begin{table}[t]\centering\small\begin{tabular}{lrr}\toprule Role & Return & 95\% CI\\\midrule Taker & -1.12\% & [-1.13,-1.11]\\ Maker & +1.12\% & [1.11,1.13]\\\bottomrule\end{tabular}\caption{Average excess return by role.}\end{table}
+At one cent, takers win roughly 0.43\% of the time against a 1\% implied probability, while makers win roughly 1.57\%. Mispricing narrows around the middle of the price range but the role-specific pattern remains.
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/maker_vs_taker_returns.png}\caption{Maker and taker excess returns by price.}\end{figure}
+\subsection{Is this merely payment for spread provision?}
+Maker profit is partly compensation for posting liquidity, but two results indicate that spread capture is not the whole explanation. Maker returns differ slightly by position direction and the maker-taker gap differs sharply across categories.
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/maker_returns_by_direction.png}\caption{Maker returns by position direction.}\end{figure}
+
+\section{Category variation}
+The return gap is smallest where participants are likely to use probabilistic, financially disciplined reasoning and widest where questions invite narrative or emotionally engaged trading.
+\begin{table}[t]\centering\scriptsize\begin{tabular}{lrrrr}\toprule Category&Taker&Maker&Gap&Trades\\\midrule Sports&-1.11&1.12&2.23&43.6M\\ Politics&-.51&.51&1.02&4.9M\\ Crypto&-1.34&1.34&2.69&6.7M\\ Finance&-.08&.08&.17&4.4M\\ Weather&-1.29&1.29&2.57&4.4M\\ Entertainment&-2.40&2.40&4.79&1.5M\\ Media&-3.64&3.64&7.28&.6M\\ World Events&-3.66&3.66&7.32&.2M\\\bottomrule\end{tabular}\caption{Returns by category (percent; gap in percentage points).}\end{table}
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/maker_taker_returns_by_category.png}\caption{Maker and taker returns by category.}\end{figure}
+Finance is a useful near-efficiency benchmark. Sports, entertainment, media, and world events admit more narrative-based participation, and their larger gaps are consistent with an optimism premium.
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/market_types.png}\caption{Distribution of market types by notional volume.}\end{figure}
+
+\section{Evolution over time}
+The maker-taker gap was not constant. In the early period, takers earned positive excess returns and makers lost money. The pattern reversed in 2024 Q2 and widened after the 2024 election. Pre-election the mean gap was about -2.9 percentage points; post-election it was about +2.5 points, a swing of 5.3 points. Volume rose from roughly $\$30$ million in 2024 Q3 to $\$820$ million in 2024 Q4.
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/maker_taker_gap_over_time.png}\caption{Quarterly maker and taker returns, with notional volume.}\end{figure}
+Longshot contracts (1--20 cents) remained about 4.8\% of taker volume before the election and 4.6\% afterward. Instead, volume shifted away from the 91--99 cent bucket and into middle prices.
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/longshot_volume_share_over_time.png}\caption{Taker longshot-volume share by quarter.}\end{figure}
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/volume_over_time.png}\caption{Quarterly Kalshi notional volume.}\end{figure}
+
+\section{The YES/NO asymmetry}
+At a one-cent cost basis, a YES contract has historical expected value of about -41\%, while an equivalent-cost NO contract has expected value near +23\%: a difference of roughly 64 percentage points. NO outperforms YES at 69 of 99 price levels. Dollar-weighted returns are approximately -1.02\% for YES buyers and +0.83\% for NO buyers.
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/ev_yes_vs_no.png}\caption{Expected value of YES and NO contracts at the same cost basis.}\end{figure}
+\subsection{Takers prefer affirmative bets}
+In the 1--10 cent range, where YES is the longshot, takers provide roughly 41--47\% of YES volume while makers provide only 20--24\%. At the other end, makers purchase NO at a much higher share than takers. This pattern is the \textbf{optimism tax}: takers pay a premium to buy hope-laden YES longshots and makers take the counterposition.
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{output/yes_vs_no_by_price.png}\caption{YES/NO volume by price, split by taker and maker.}\end{figure}
+
+\section{Discussion and limitations}
+The results distinguish market-level accuracy from participant-level welfare. Prediction-market prices can closely track frequencies while a systematic transfer occurs inside the market. In low-volume early years, less sophisticated makers may have lost to informed takers. As volume rose, professional makers could harvest the spread and the biased component of taker flow more reliably.
+
+Unique trader identifiers are unavailable, so maker/taker is a proxy rather than a direct label for sophistication. Historical trade records also do not provide full contemporaneous order-book spreads, making a strict separation of spread compensation and behavioral extraction impossible. Finally, these results concern a regulated U.S. venue and may not transfer unchanged to offshore markets.
+
+\section{Conclusion}
+Kalshi's aggregate probabilities are broadly calibrated, but that accuracy conceals a persistent transfer from liquidity takers to liquidity makers. Takers underperform, especially when buying affirmative longshots; makers capture the offsetting return. The gap varies systematically with category and appeared most strongly after the platform became deep enough to attract professional liquidity provision.
+
+\begin{thebibliography}{9}\small
+\bibitem{fama} Fama, E. (1970). Efficient Capital Markets. \textit{Journal of Finance}.
+\bibitem{griffith} Griffith, R. (1949). Odds Adjustments by American Horse-Race Bettors. \textit{American Journal of Psychology}.
+\bibitem{thaler} Thaler, R., and Ziemba, W. (1988). Parimutuel Betting Markets. \textit{Journal of Economic Perspectives}.
+\bibitem{becker} Becker, J. (2026). \textit{The Microstructure of Wealth Transfer in Prediction Markets}.
+\end{thebibliography}
+\end{document}
