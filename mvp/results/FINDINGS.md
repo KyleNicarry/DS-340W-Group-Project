@@ -1,6 +1,6 @@
 # MVP findings: predicting the optimism-tax wedge
 
-No supervised specification beats its corresponding training-mean baseline on held-out MAE. The delivered analysis establishes a working estimator and evaluation pipeline, but does **not establish reliable future-market prediction or an exploitable liquidity-provider signal**.
+At least one exploratory specification improves held-out MAE; this is not confirmatory evidence after multiple comparisons. The delivered analysis establishes a working estimator and evaluation pipeline, but does **not establish reliable future-market prediction or an exploitable liquidity-provider signal**.
 
 The primary specification is text-based clustering plus interpretable ridge regression, predesignated in the pipeline; the development holdout is exploratory. Its held-out MAE is **20.11 probability percentage points**, versus **14.72** for the naive mean; RMSE is **29.85** and R² is **-1.42**. MAE improvement over the baseline is -5.39 pp, with a conditional cluster-block 95% interval [-10.83, 0.65]. These intervals are particularly fragile with only 6 held-out semantic clusters.
 
@@ -39,6 +39,21 @@ All errors are in probability percentage points; lower is better. The following 
 The [full comparison](model_comparison.csv) adds market-only and supplementary LSA blocks for both clustering approaches. There is no hyperparameter search or selection of a reported winner on test outcomes. Similarity and coherence safeguards were revised during exploratory development; a fresh holdout is required for confirmation. The two clustering approaches generate different groups/support and label counts: their raw errors are not a paired comparison on the same target rows. Compare each model with its own baseline. Ordinary least squares with many LSA predictors can extrapolate far outside the physically possible wedge range; predictions are intentionally not clipped after examining the holdout. This exposes its unsuitability at the current sample size.
 
 ![Prediction performance](prediction_performance.png)
+
+## Secondary iteration: robust, conservative estimates
+
+The first pass suggests that a few noisy group labels can pull squared-error fits away from typical outcomes. We added a training-median constant and a market-only Huber regression with strong fixed regularization (alpha 10). Both use training labels only; the same development holdout is reused, so any gain is exploratory.
+
+| approach | model | mae_pp | mae_improvement_pp |
+| --- | --- | --- | --- |
+| text | mean | 14.72 | 0.00 |
+| text | median | 13.57 | 1.15 |
+| text | huber | 14.58 | 0.14 |
+| text_price | mean | 16.62 | 0.00 |
+| text_price | median | 15.52 | 1.10 |
+| text_price | huber | 17.27 | -0.65 |
+
+The median is a useful **default estimate of the typical eligible group wedge** when a point estimate is needed. It does not distinguish opportunities across groups. Huber retains some market-feature variation, but its small gain over the mean on text clusters is insufficient to validate ranking. The practical route is to use the robust estimate for screening and uncertainty-aware data collection, then test a conditional signal on a fresh chronological holdout before making any trading decision.
 
 ## Feature associations
 

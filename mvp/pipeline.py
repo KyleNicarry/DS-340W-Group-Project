@@ -32,7 +32,7 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.linear_model import HuberRegressor, LinearRegression, Ridge
 from sklearn.metrics import (
     adjusted_rand_score,
     mean_absolute_error,
@@ -494,14 +494,16 @@ def model_labels(labels, approach, args, out):
         assert np.isfinite(x.to_numpy()).all() and np.isfinite(xt.to_numpy()).all()
         models = {
             "mean": DummyRegressor(),
+            "median": DummyRegressor(strategy="median"),
             "linear": make_pipeline(StandardScaler(), LinearRegression()),
             "ridge": make_pipeline(StandardScaler(), Ridge(alpha=10.0)),
+            "huber": make_pipeline(StandardScaler(), HuberRegressor(alpha=10.0, max_iter=1000)),
             "forest": RandomForestRegressor(
                 n_estimators=200, max_depth=3, min_samples_leaf=5, random_state=SEED, n_jobs=1
             ),
         }
         for name, model in models.items():
-            if name == "mean" and block != "market":
+            if name in {"mean", "median", "huber"} and block != "market":
                 continue
             # Equal row weights target the average eligible group-cost cell. Labels
             # with smaller estimated SE are NOT promoted using realized outcomes.

@@ -35,13 +35,15 @@ def write_findings(out: Path):
         (metrics.approach == "text") & ((metrics.block == "interpretable") | (metrics.model == "mean"))
     ]
     comparison = comparison[["block", "model", "mae_pp", "rmse_pp", "r2"]]
+    second_pass = metrics[(metrics.block == "market") & (metrics.model.isin(["mean", "median", "huber"]))]
+    second_pass = second_pass[["approach", "model", "mae_pp", "mae_improvement_pp"]]
     diagnostics = pd.read_csv(out / "clustering_diagnostics.csv")
     rank = pd.read_csv(out / "ranking_text.csv")
     contrast = json.loads((out / "ranking_summary_text.json").read_text())
     coeff = pd.read_csv(out / "coefficients_text.csv")
     coeff = coeff[(coeff.block == "interpretable") & (coeff.model == "ridge")]
     coeff = coeff.loc[coeff.coefficient_pp.abs().sort_values(ascending=False).index].head(5)
-    improved = (metrics.loc[metrics.model != "mean", "mae_improvement_pp"] > 0).any()
+    improved = (metrics.loc[~metrics.model.isin(["mean", "median"]), "mae_improvement_pp"] > 0).any()
     result = (
         "At least one exploratory specification improves held-out MAE; this is not confirmatory evidence after multiple comparisons."
         if improved
@@ -82,6 +84,14 @@ All errors are in probability percentage points; lower is better. The following 
 The [full comparison](model_comparison.csv) adds market-only and supplementary LSA blocks for both clustering approaches. There is no hyperparameter search or selection of a reported winner on test outcomes. Similarity and coherence safeguards were revised during exploratory development; a fresh holdout is required for confirmation. The two clustering approaches generate different groups/support and label counts: their raw errors are not a paired comparison on the same target rows. Compare each model with its own baseline. Ordinary least squares with many LSA predictors can extrapolate far outside the physically possible wedge range; predictions are intentionally not clipped after examining the holdout. This exposes its unsuitability at the current sample size.
 
 ![Prediction performance](prediction_performance.png)
+
+## Secondary iteration: robust, conservative estimates
+
+The first pass suggests that a few noisy group labels can pull squared-error fits away from typical outcomes. We added a training-median constant and a market-only Huber regression with strong fixed regularization (alpha 10). Both use training labels only; the same development holdout is reused, so any gain is exploratory.
+
+{markdown_table(second_pass)}
+
+The median is a useful **default estimate of the typical eligible group wedge** when a point estimate is needed. It does not distinguish opportunities across groups. Huber retains some market-feature variation, but its small gain over the mean on text clusters is insufficient to validate ranking. The practical route is to use the robust estimate for screening and uncertainty-aware data collection, then test a conditional signal on a fresh chronological holdout before making any trading decision.
 
 ## Feature associations
 
