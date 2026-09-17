@@ -1,0 +1,22 @@
+{
+  "market_rows": 7682445,
+  "trade_rows": 72134741,
+  "finalized_binary_outcome": 7314375,
+  "non_combination": 3730613,
+  "usable_metadata": 3730613,
+  "open_past_landmark": 356171,
+  "sampled_metadata": 60000,
+  "window_raw_trades": 642020,
+  "invalid_window_trades": 0,
+  "deduplicated_valid_window_trades": 642020,
+  "contracts_with_min_early_trades": 11189,
+  "split_contracts": {
+    "train": 9963,
+    "test": 1226
+  },
+  "split_series": {
+    "test": 188,
+    "train": 640
+  },
+  "window_hours": 24
+}

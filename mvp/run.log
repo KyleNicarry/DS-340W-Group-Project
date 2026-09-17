@@ -1,0 +1,62 @@
+{
+  "market_rows": 7682445,
+  "trade_rows": 72134741,
+  "finalized_binary_outcome": 7314375,
+  "non_combination": 3730613,
+  "usable_metadata": 3730613,
+  "open_past_landmark": 356171,
+  "sampled_metadata": 60000,
+  "window_raw_trades": 642020,
+  "invalid_window_trades": 0,
+  "deduplicated_valid_window_trades": 642020,
+  "contracts_with_min_early_trades": 11189,
+  "split_contracts": {
+    "train": 9963,
+    "test": 1226
+  },
+  "split_series": {
+    "test": 188,
+    "train": 640
+  },
+  "window_hours": 24
+}
+Estimating text grouped labels...
+split  status                
+test   eligible                  16
+       insufficient_coherence     5
+       insufficient_support      39
+train  eligible                  62
+       insufficient_coherence     5
+       insufficient_support      13
+dtype: int64
+Estimating text_price grouped labels...
+split  status                
+test   eligible                  18
+       insufficient_coherence    10
+       insufficient_support      34
+train  eligible                  62
+       insufficient_coherence    10
+       insufficient_support       8
+dtype: int64
+  approach             block  model  train_rows  test_rows  test_clusters    mae_pp    rmse_pp         r2  mae_improvement_pp  improvement_ci_low_pp  improvement_ci_high_pp
+      text            market   mean          62         16              6 14.715825  22.997258  -0.436477            0.000000               0.000000                0.000000
+      text            market linear          62         16              6 19.793156  28.472791  -1.201946           -5.077331              -7.695884               -1.046217
+      text            market  ridge          62         16              6 18.496643  27.080962  -0.991933           -3.780818              -6.175431                0.192098
+      text            market forest          62         16              6 18.775932  28.297363  -1.174896           -4.060107              -6.441678               -0.111075
+      text     interpretable linear          62         16              6 37.590462  49.219523  -5.579931          -22.874638             -40.163728              -11.947104
+      text     interpretable  ridge          62         16              6 20.105538  29.853052  -1.420606           -5.389713             -10.830509                0.652951
+      text     interpretable forest          62         16              6 18.810389  27.476128  -1.050490           -4.094565              -8.151993               -0.219326
+      text interpretable_lsa linear          62         16              6 80.828743 157.103579 -66.037640          -66.112918            -185.322602              -12.713648
+      text interpretable_lsa  ridge          62         16              6 25.122314  33.098321  -1.975490          -10.406490             -17.177252               -2.250825
+      text interpretable_lsa forest          62         16              6 17.327746  26.633245  -0.926614           -2.611921              -6.162335                0.674514
+text_price            market   mean          62         18              6 16.616836  25.264172  -0.570247            0.000000               0.000000                0.000000
+text_price            market linear          62         18              6 19.614313  28.336317  -0.975353           -2.997477              -4.959168               -0.466891
+text_price            market  ridge          62         18              6 18.926811  27.685576  -0.885667           -2.309975              -4.123953                0.003052
+text_price            market forest          62         18              6 19.259827  28.133199  -0.947135           -2.642991              -4.146146               -0.406842
+text_price     interpretable linear          62         18              6 30.646143  40.094063  -2.954741          -14.029307             -26.193268               -7.568330
+text_price     interpretable  ridge          62         18              6 20.673939  30.548678  -1.295846           -4.057103              -8.776708               -0.317065
+text_price     interpretable forest          62         18              6 19.129728  27.667301  -0.883178           -2.512892              -4.764541               -0.690173
+text_price interpretable_lsa linear          62         18              6 68.667290 102.469192 -24.831195          -52.050454            -134.319569              -20.968504
+text_price interpretable_lsa  ridge          62         18              6 24.937839  34.526371  -1.932647           -8.321003             -15.789548               -3.614584
+text_price interpretable_lsa forest          62         18              6 18.625307  27.896801  -0.914550           -2.008471              -7.455437                1.638235
+Completed in 14.2s. Results: /Users/kylenicarry/Desktop/DS 340W/DS-340W-Group-Project/mvp/results

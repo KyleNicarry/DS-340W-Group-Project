@@ -1,0 +1,9 @@
+column_name,column_type,null,key,default,extra
+trade_id,VARCHAR,YES,,,
+ticker,VARCHAR,YES,,,
+count,BIGINT,YES,,,
+yes_price,BIGINT,YES,,,
+no_price,BIGINT,YES,,,
+taker_side,VARCHAR,YES,,,
+created_time,TIMESTAMP WITH TIME ZONE,YES,,,
+_fetched_at,TIMESTAMP_NS,YES,,,

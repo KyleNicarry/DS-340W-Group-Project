@@ -1,0 +1,10 @@
+{
+  "high_minus_low_tax_pp": -21.43238432065753,
+  "contrast_ci_pp": [
+    -54.41702138927824,
+    14.879894192729067
+  ],
+  "bootstrap_valid": 172,
+  "baseline_tax_pp": -6.640197450844524,
+  "high_minus_baseline_tax_pp": -10.19155750657275
+}
