@@ -8,6 +8,7 @@ Edit ``The Microstructure of Wealth Transfer in Prediction Markets.md`` for
 article text and ``replicate_article.tex`` for layout/typography. The figure
 paths are the PNG files in ``output/`` produced by ``src/analysis``.
 """
+
 from __future__ import annotations
 
 import argparse
