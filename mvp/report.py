@@ -1,4 +1,4 @@
-"""Generate a short, linked findings report directly from the completed tables.
+"""Generate a step-by-step, linked findings report from completed tables.
 
 No hand-copied performance values: rerunning the pipeline updates all quantitative
 claims. The qualitative limitations describe the experimental design, irrespective
@@ -57,6 +57,12 @@ def write_findings(out: Path):
 
 The primary specification is text-based clustering plus interpretable ridge regression, predesignated in the pipeline; the development holdout is exploratory. Its held-out MAE is **{primary.mae_pp:.2f} probability percentage points**, versus **{baseline.mae_pp:.2f}** for the naive mean; RMSE is **{primary.rmse_pp:.2f}** and R² is **{primary.r2:.2f}**. MAE improvement over the baseline is {primary.mae_improvement_pp:.2f} pp, with a conditional cluster-block 95% interval [{primary.improvement_ci_low_pp:.2f}, {primary.improvement_ci_high_pp:.2f}]. These intervals are particularly fragile with only {test.cluster.nunique()} held-out semantic clusters.
 
+## What this analysis measures
+
+The question is whether information available during a contract's first {config["window_hours"]} hours can predict a later YES-versus-NO pricing difference for groups of similar contracts. The prediction unit is a *cluster-by-cost-band label*, not an individual trade or contract. At each supported exact purchase cost, the pipeline estimates the resolved win rate minus that cost separately for YES and NO, then subtracts NO mispricing from YES mispricing. A negative wedge means YES performed worse than NO at matched costs. Results are measured in probability percentage points, not percentage returns or realizable profit.
+
+The workflow is: screen and sample resolved contracts; measure early trades and wording; keep related series together in either training or test; assign contracts to text clusters fitted on training inputs; construct separate group-and-cost labels in each split; fit models on training labels; and score their predictions on test labels. The [methodology](../README.md) supplies formulas and complete settings.
+
 ## Data and label coverage
 
 The raw Kalshi extract has {audit["market_rows"]:,} market records and {audit["trade_rows"]:,} executions. After finalization/binary-outcome, combination exclusion, metadata and {config["window_hours"]}-hour landmark screening, {audit["open_past_landmark"]:,} market records are eligible for sampling. A deterministic sample of {audit["sampled_metadata"]:,} yields **{audit["contracts_with_min_early_trades"]:,} contracts** with at least {config["min_early_trades"]} observation-window executions. The valid sampled window has {audit["deduplicated_valid_window_trades"]:,} executions before the minimum-trade contract filter. See [attrition](attrition.json) for sequential counts.
@@ -65,7 +71,15 @@ The whole-series holdout contains {audit["split_contracts"]["train"]:,} training
 
 The equal-row mean wedge changes from {train.wedge_pp.mean():.2f} pp in train to {test.wedge_pp.mean():.2f} pp in test. Test estimates span {test.wedge_pp.min():.2f} to {test.wedge_pp.max():.2f} pp; their sample SD is {test.wedge_pp.std():.2f} pp and median event-bootstrap SE is {test.se_pp.median():.2f} pp. These are descriptive variation measures that mix signal, sampling noise and population composition; they do not estimate between-group latent variance. A sign reversal across different populations is not evidence of a temporal regime shift.
 
+**Why these filters matter:** resolved binary outcomes are needed to calculate which side won. Excluding combination products reduces shared-leg dependence that this extract cannot reliably identify. Requiring a recorded close later than the first-day landmark places trade features before that close. The deterministic ticker sample controls processing size without choosing contracts by volume. The five-trade threshold avoids activity summaries based on nearly empty windows. These choices produce a selected population of longer-lived, early-active contracts; results should not be generalized automatically to all listings.
+
+**How labels are built:** one execution supplies a YES observation at its YES price and a complementary NO observation at its NO price. Within each exact cost, the pipeline compares each side's observed win rate with the probability implied by the cost. It retains costs with sufficient distinct contracts and events on both sides, then averages equally across retained costs in the band. Matching costs prevents a coarse-band difference caused only by different YES and NO price mixtures. Repeated executions share contract outcomes, so uncertainty is estimated by resampling complete events, not individual trades. Support thresholds reduce sparse cells but do not guarantee precise labels.
+
+**Why series are split together:** contracts in one recurring series can have related outcomes and wording. Keeping complete series on one side of the split blocks direct event reuse between training and test. Other series can still refer to the same underlying event, and this split is not chronological. The train/test mean difference above warns that the observed populations differ; it does not by itself reveal a time trend or a stable shift in underlying mispricing.
+
 ## Clustering and price sensitivity
+
+**Step:** represent each contract using its title and observed YES subtitle, fit TF-IDF and latent semantic analysis on training wording, and assign contracts to frozen k-means centroids. The primary map adds a small block of transparent wording features; a second map also adds bounded early price as a sensitivity check. Outcomes do not enter the cluster fit. Clusters provide pools for estimating group labels, but their numeric IDs are not economic categories.
 
 {markdown_table(diagnostics[["approach", "silhouette", "price_bin_nmi", "price_removal_adjusted_rand"]])}
 
@@ -75,7 +89,11 @@ Low price-decile mutual information and retained within-cluster price variation 
 
 ![Wedge variation and uncertainty](wedge_variation.png)
 
+Silhouette measures separation in the chosen feature space. Price-bin mutual information tests whether assignment closely tracks price deciles. Adjusted Rand agreement measures how much assignment changes when the price block is removed. None establishes that contracts share an economic mechanism. The [manual review](../CLUSTER_REVIEW.md) identifies mixed groups that need closer inspection before substantive category claims.
+
 ## Model comparison
+
+**Step:** fit models on eligible training group-cost labels and predict labels constructed from unseen series. Inputs summarize early trading and wording among contributing contracts; each eligible label receives equal weight. The mean baseline predicts the same training-average wedge for every test row and is the reference a group-specific model should improve upon.
 
 All errors are in probability percentage points; lower is better. The following uses primary text clusters and interpretable features (baseline shown once):
 
@@ -85,6 +103,10 @@ The [full comparison](model_comparison.csv) adds market-only and supplementary L
 
 ![Prediction performance](prediction_performance.png)
 
+MAE is the average absolute prediction miss in probability points; RMSE places more weight on large misses; R² compares squared error with a constant test-mean reference. For the predesignated ridge model, MAE exceeds the training-mean baseline by {-primary.mae_improvement_pp:.2f} points, so its group-specific predictions are less accurate on this holdout. Its negative R² also indicates poor squared-error fit against the test-mean reference. The MAE-improvement interval includes zero and is fragile with only {test.cluster.nunique()} held-out clusters.
+
+The forest's lower error in the table is a lead for future work. Because several representations and models were inspected on the same development holdout, selecting it now would give an optimistic estimate of future performance. A new, untouched evaluation period is needed after grouping and model rules are fixed.
+
 ## Secondary iteration: robust, conservative estimates
 
 The first pass suggests that a few noisy group labels can pull squared-error fits away from typical outcomes. We added a training-median constant and a market-only Huber regression with strong fixed regularization (alpha 10). Both use training labels only; the same development holdout is reused, so any gain is exploratory.
@@ -92,6 +114,8 @@ The first pass suggests that a few noisy group labels can pull squared-error fit
 {markdown_table(second_pass)}
 
 The median is a useful **default estimate of the typical eligible group wedge** when a point estimate is needed. It does not distinguish opportunities across groups. Huber retains some market-feature variation, but its small gain over the mean on text clusters is insufficient to validate ranking. The practical route is to use the robust estimate for screening and uncertainty-aware data collection, then test a conditional signal on a fresh chronological holdout before making any trading decision.
+
+The median predicts one robust central value for every group and is less sensitive to extreme training labels. Huber regression reduces the influence of large residuals while allowing predictions to vary with early market features. These checks ask whether noisy targets or outliers contributed to the first-pass result; they do not supply an independent validation sample.
 
 ## Feature associations
 
@@ -102,6 +126,8 @@ The five largest absolute standardized coefficients of the primary ridge fit are
 A coefficient is the fitted wedge change per training-group SD, conditional on other inputs. A negative coefficient corresponds to a larger YES disadvantage. Features are aggregated at group level; these coefficients are neither contract-level effects nor causal estimates. Given weak held-out performance, they are exploratory training associations, not established generalizable predictors. Lexicon counts do not constitute validated sentiment or emotion measures.
 
 ![Ridge coefficients](feature_coefficients.png)
+
+For example, the political-word coefficient describes the fitted change associated with a one-training-standard-deviation increase in that group-level count while the other inputs are held fixed. It does not say that political wording caused the change or that the association will transfer to new series. Correlated wording, event type and prices can alter coefficients substantially when there are few training labels.
 
 ## Preliminary signal ranking
 
@@ -114,6 +140,8 @@ Realized high-minus-low tax is **{contrast["high_minus_low_tax_pp"]:.2f} pp**, w
 ![Held-out ranking](signal_ranking.png)
 
 These are pooled direction asymmetries, not maker profits. There are no historical executable spreads, fees, depth, queue/fill probabilities or inventory constraints in this MVP. No economic-exploitability claim is justified.
+
+The ranking step sorts held-out rows using predicted tax alone and then checks their realized tax. A useful ranking would put a larger realized tax in the highest predicted group than in the lowest. Here the observed high-minus-low difference runs in the opposite direction. The wide interval crosses zero, so neither a beneficial ranking nor a stable reversed ranking is established. Few rows and clusters in each tertile make this a diagnostic for the next experiment, not a selection rule.
 
 ## Limits and recommended next steps
 
