@@ -117,3 +117,10 @@ Displayed support and similarity describe the current search/split filter.
 Group reviews are keyed to cluster identity and the exact assignments dataset,
 not to individual filter settings. Reviews do not change assignments. Applying
 reviewed constraints requires an explicit subsequent pipeline revision.
+
+## Cluster-level mispricing results
+
+The [mispricing analysis](mispricing/README.md) reruns the original paper's
+same-cost YES/NO comparison on the recent-year CSVs, with matched pooled baselines,
+event/market uncertainty, and checks of variation within structural families.
+See its [findings report](mispricing/FINDINGS.md) for the completed results.
