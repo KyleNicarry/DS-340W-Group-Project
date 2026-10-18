@@ -1,5 +1,8 @@
 # Mispricing within contract clusters
 
+See [next steps](NEXT_STEPS.md) for the persistence checks and chronological
+out-of-sample validation plan.
+
 Read [FINDINGS.md](FINDINGS.md) for the completed CSV analysis, figures, uncertainty,
 and interpretation. This workflow follows the original paper's exact-price
 YES/NO calibration contrast; it does not use the MVP.
