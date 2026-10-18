@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contract title review</title>
+<style>
+:root {color-scheme:light dark;font:15px system-ui,sans-serif;background:light-dark(#f7f8fa,#16191e);color:light-dark(#202735,#e3e8ef)}
+body{max-width:1500px;margin:auto;padding:24px} h1{font-size:26px;margin:0} p{line-height:1.5}button,input,select,textarea{font:inherit;padding:9px;border:1px solid #8792a3;border-radius:5px;background:light-dark(white,#242a34);color:inherit}button{cursor:pointer}button:disabled{opacity:.5}label{display:flex;flex-direction:column;gap:6px} .controls{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0} .layout{display:grid;grid-template-columns:320px 1fr;gap:24px}#groups{max-height:70vh;overflow:auto}#groups button{display:block;text-align:left;width:100%;margin-bottom:6px;overflow-wrap:anywhere}#groups button[aria-pressed=true]{border:2px solid #3689e6}small,.muted{color:light-dark(#536171,#adb9c8)}.contract{padding:16px 0;border-bottom:1px solid #8792a355}.contract h3{font-size:17px;margin:0 0 7px}.subtitle{font-weight:600;margin-bottom:8px}.meta{font-size:13px;overflow-wrap:anywhere}#notes{width:100%;box-sizing:border-box;min-height:70px}.review{margin:16px 0}#error{color:light-dark(#a12323,#ffa2a2)}@media(max-width:800px){.layout{grid-template-columns:1fr}#groups{max-height:240px}body{padding:14px}}
+</style>
+<h1>Contract title review</h1>
+<p>Browse actual assignments. Titles and YES subtitles are shown separately so missing strikes and named alternatives remain visible. Similarity measures closeness to the cluster center; it does not measure mispricing.</p>
+<div class="controls">
+<label>Split<select id="split"><option value="train">Train</option><option value="validation">Validation</option><option value="test">Test</option><option value="all">All</option></select></label>
+<label>Assignment<select id="status"><option value="assigned">Assigned</option><option value="unassigned">Unassigned</option><option value="all">All</option></select></label>
+<label>Search titles, subtitles or tickers<input id="search" type="search" placeholder="e.g. Bitcoin, Chicago, winner"></label>
+<label>Filter group names<input id="family" type="search" placeholder="e.g. weather or BTC"></label>
+<label>Group order<select id="groupOrder"><option value="weak">Weakest mean similarity</option><option value="large">Largest first</option><option value="name">Name</option></select></label>
+</div>
+<p id="summary" aria-live="polite"></p><p id="error" role="alert"></p>
+<div class="layout"><aside aria-label="Groups"><div id="groups"></div></aside><main>
+<h2 id="heading">Select a group</h2><p id="support"></p>
+<div class="controls">
+<label>Title order<select id="order"><option value="peripheral">Peripheral: weakest first</option><option value="central">Central: strongest first</option><option value="random">Random sample</option></select></label>
+<label>Display<select id="dedup"><option value="unique">Distinct title + subtitle pairs</option><option value="all">All contracts</option></select></label>
+<button id="shuffle">Reshuffle sample</button>
+</div>
+<div class="review"><label>Group assessment<select id="assessment"><option value="">Unreviewed</option><option>Coherent</option><option>Mixed topics</option><option>Wrong contract structure</option><option>Needs splitting</option><option>Potential merge</option><option>Uncertain</option></select></label>
+<label>Review notes<textarea id="notes" placeholder="What belongs here? Which titles seem misplaced?"></textarea></label>
+<div class="controls"><button id="save">Save group review</button><button id="export">Export reviews</button></div><small id="saved">Reviews save in this browser when storage is available. Export a copy to keep them.</small></div>
+<div class="controls"><button id="prev">Previous page</button><span id="page" aria-live="polite"></span><button id="next">Next page</button></div>
+<div id="contracts"></div>
+</main></div>
+<script>
+'use strict';
+// Column positions: ticker,event,title,subtitle,split,cluster,status,similarity,family.
+const data=(()=>{try{return __DATA__}catch(e){return null}})();
+if(data===null){
+ const message=document.getElementById('error');
+ message.textContent='This is the source template, which contains no assignments. Open the generated viewer: ';
+ const link=document.createElement('a');link.href='../../../../output/clustering/title-review.html';link.textContent='Open contract title review with data';message.append(link);
+ for(const control of document.querySelectorAll('input,select,textarea,button'))control.disabled=true;
+}else{
+const key='cluster-title-review-__RUN__';
+const el=id=>document.getElementById(id);
+let reviews={},selected='',groups=[],page=0,seed=340;
+try{reviews=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){el('error').textContent='Browser storage unavailable. Export reviews before closing.'}
+const groupKey=r=>r[5]||('Unassigned / '+r[6]+' / '+r[8]);
+const score=r=>Number.isFinite(parseFloat(r[7]))?parseFloat(r[7]):-1;
+function node(tag,text,cls){const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n}
+function rngValue(r){let h=seed;for(const c of r[0])h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0}
+function refresh(){
+ const split=el('split').value,status=el('status').value,q=el('search').value.toLowerCase(),f=el('family').value.toLowerCase(),map=new Map();
+ for(const r of data){if(split!=='all'&&r[4]!==split)continue;if(status==='assigned'&&r[6]!=='assigned'||status==='unassigned'&&r[6]==='assigned')continue;
+ if(q&&!(r[0]+' '+r[2]+' '+r[3]).toLowerCase().includes(q))continue;const k=groupKey(r);if(f&&!k.toLowerCase().includes(f))continue;if(!map.has(k))map.set(k,[]);map.get(k).push(r)}
+ groups=Array.from(map,([k,rows])=>({k,rows,mean:rows.reduce((a,r)=>a+score(r),0)/rows.length}));
+ const order=el('groupOrder').value;groups.sort((a,b)=>order==='large'?b.rows.length-a.rows.length:order==='weak'?a.mean-b.mean:a.k.localeCompare(b.k));
+ if(!map.has(selected))selected=groups[0]?.k||'';
+ el('summary').textContent=`${groups.length.toLocaleString()} groups · ${groups.reduce((a,g)=>a+g.rows.length,0).toLocaleString()} matching contracts · ${Object.keys(reviews).length} saved reviews`;
+ const container=el('groups');container.replaceChildren();
+ for(const g of groups){const b=node('button',g.k+' · '+g.rows.length.toLocaleString()+(reviews[g.k]?' · reviewed':''));b.setAttribute('aria-pressed',String(g.k===selected));b.onclick=()=>{selected=g.k;page=0;refresh()};container.append(b)}
+ const review=reviews[selected]||{};el('assessment').value=review.assessment||'';el('notes').value=review.notes||'';render();
+}
+function render(){const g=groups.find(g=>g.k===selected);el('heading').textContent=selected||'No matching groups';el('contracts').replaceChildren();if(!g){el('support').textContent='';el('page').textContent='0 results';el('prev').disabled=true;el('next').disabled=true;return}
+ el('support').textContent=`${g.rows.length.toLocaleString()} contracts · ${new Set(g.rows.map(r=>r[1])).size.toLocaleString()} distinct events · Mean similarity ${g.mean.toFixed(3)}`;
+ let rows=[...g.rows];const order=el('order').value;rows.sort((a,b)=>order==='random'?rngValue(a)-rngValue(b):order==='central'?score(b)-score(a):score(a)-score(b));
+ const counts=new Map();for(const r of rows){const k=JSON.stringify([r[2],r[3]]);counts.set(k,(counts.get(k)||0)+1)}
+ if(el('dedup').value==='unique'){const seen=new Set();rows=rows.filter(r=>{const k=JSON.stringify([r[2],r[3]]);if(seen.has(k))return false;seen.add(k);return true})}
+ const pages=Math.max(1,Math.ceil(rows.length/30));page=Math.min(page,pages-1);el('page').textContent=`Page ${page+1} of ${pages} · ${rows.length.toLocaleString()} displayed pairs/contracts`;el('prev').disabled=page===0;el('next').disabled=page>=pages-1;
+ for(const r of rows.slice(page*30,(page+1)*30)){const card=node('article','','contract');card.append(node('h3',r[2]),node('div','YES: '+(r[3]||'(no subtitle)'),'subtitle'),node('div',`${r[0]} · ${r[4]} · ${r[6]} · Similarity ${score(r)<0?'unavailable':score(r).toFixed(3)}`,'meta'),node('div',`Event: ${r[1]} · ${counts.get(JSON.stringify([r[2],r[3]]))} contracts with this title/subtitle in the current filter`,'meta muted'));el('contracts').append(card)}
+}
+for(const id of ['split','status','family','groupOrder'])el(id).onchange=()=>{page=0;refresh()};
+let timer;el('search').oninput=()=>{clearTimeout(timer);timer=setTimeout(()=>{page=0;refresh()},250)};
+for(const id of ['order','dedup'])el(id).onchange=()=>{page=0;render()};
+el('shuffle').onclick=()=>{seed++;el('order').value='random';page=0;render()};el('prev').onclick=()=>{page--;render()};el('next').onclick=()=>{page++;render()};
+el('save').onclick=()=>{if(!selected)return;reviews[selected]={assessment:el('assessment').value,notes:el('notes').value,updated:new Date().toISOString()};try{localStorage.setItem(key,JSON.stringify(reviews));el('saved').textContent='Saved in this browser. Export a copy for durable storage.'}catch(e){el('error').textContent='Browser storage failed. Export reviews before closing.'}refresh()};
+el('export').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({run:'__RUN__',reviews},null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='cluster-title-reviews.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+refresh();
+}
+</script>
+</html>

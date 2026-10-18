@@ -1,0 +1,2 @@
+# Optional, CPU-compatible sentence embedding backend. Core LSA uses project dependencies.
+sentence-transformers==3.4.1
