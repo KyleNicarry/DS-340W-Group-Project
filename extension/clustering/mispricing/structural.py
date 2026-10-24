@@ -74,10 +74,8 @@ def equal_support_test(pos: pd.DataFrame, summary: pd.DataFrame) -> list[dict]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=Path("data/kalshi_recent_year_csv"))
-    parser.add_argument("--cache", type=Path, default=Path("src/analysis/kalshi/clustering/mispricing/results"))
-    parser.add_argument(
-        "--output", type=Path, default=Path("src/analysis/kalshi/clustering/mispricing/results/structural")
-    )
+    parser.add_argument("--cache", type=Path, default=Path("extension/clustering/mispricing/results"))
+    parser.add_argument("--output", type=Path, default=Path("extension/clustering/mispricing/results/structural"))
     args = parser.parse_args()
     audit = json.loads((args.cache / "data_audit.json").read_text())
     inputs = fingerprint([args.data / "master/markets.csv", args.data / "master/trades.csv"])

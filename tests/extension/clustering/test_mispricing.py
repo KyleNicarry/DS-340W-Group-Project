@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.analysis.kalshi.clustering.mispricing.statistics import curve, estimate, fdr, positions
+from extension.clustering.mispricing.statistics import curve, estimate, fdr, positions
 
 
 def fixture_cells():
@@ -79,7 +79,7 @@ def test_paired_sandwich_matches_hand_calculation():
 
 
 def test_csv_extraction_uses_observed_units_for_volume_and_rejects_invalid(tmp_path):
-    from src.analysis.kalshi.clustering.mispricing.data import extract
+    from extension.clustering.mispricing.data import extract
 
     data = tmp_path / "data" / "master"
     data.mkdir(parents=True)
@@ -125,7 +125,7 @@ def test_csv_extraction_uses_observed_units_for_volume_and_rejects_invalid(tmp_p
 
 
 def test_direct_equality_distinguishes_within_and_between_families():
-    from src.analysis.kalshi.clustering.mispricing.heterogeneity import centered_max_test
+    from extension.clustering.mispricing.heterogeneity import centered_max_test
 
     means = np.array([-20.0, -20.0, 20.0, 20.0])
     covariance = np.eye(4)
@@ -137,7 +137,7 @@ def test_direct_equality_distinguishes_within_and_between_families():
 
 
 def test_structural_groups_ignore_learned_membership_and_exclude_combinations():
-    from src.analysis.kalshi.clustering.mispricing.structural import structural_labels
+    from extension.clustering.mispricing.structural import structural_labels
 
     markets = pd.DataFrame(
         [

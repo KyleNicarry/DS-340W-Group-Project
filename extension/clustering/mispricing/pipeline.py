@@ -24,7 +24,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=Path("data/kalshi_recent_year_csv"))
     parser.add_argument("--assignments", type=Path, default=Path("output/clustering/assignments.csv"))
-    parser.add_argument("--output", type=Path, default=Path("src/analysis/kalshi/clustering/mispricing/results"))
+    parser.add_argument("--output", type=Path, default=Path("extension/clustering/mispricing/results"))
     parser.add_argument(
         "--reuse-stats", action="store_true", help="Reuse audited sufficient statistics only if input metadata match"
     )

@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.analysis.kalshi.clustering.features import extract_attributes
-from src.analysis.kalshi.clustering.pipeline import group_contracts, load_contracts
+from extension.clustering.features import extract_attributes
+from extension.clustering.pipeline import group_contracts, load_contracts
 
 
 @pytest.mark.parametrize(
@@ -83,7 +83,7 @@ def test_csv_loader_detects_event_leakage(tmp_path):
 
 
 def test_sentence_backend_requires_local_checkpoint(tmp_path):
-    from src.analysis.kalshi.clustering.pipeline import embed
+    from extension.clustering.pipeline import embed
 
     args = Namespace(backend="sentence", model=tmp_path / "missing")
     with pytest.raises(ValueError, match="local sentence-transformers checkpoint"):

@@ -4,7 +4,7 @@ import csv
 
 import pytest
 
-from src.analysis.kalshi.clustering.viewer import FIELDS, build_viewer
+from extension.clustering.viewer import FIELDS, build_viewer
 
 
 def test_viewer_embeds_titles_without_script_injection(tmp_path):

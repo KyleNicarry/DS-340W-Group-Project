@@ -10,9 +10,9 @@ It preserves those splits, fits on train, and assigns validation/test using froz
 centroids. It does not scan the Parquets or the 65-million-row trade CSV.
 
 ```bash
-.venv/bin/python -m src.analysis.kalshi.clustering.pipeline
+.venv/bin/python -m extension.clustering.pipeline
 # Matched baseline: same economic families and rejection rules, different algorithm.
-.venv/bin/python -m src.analysis.kalshi.clustering.pipeline --method kmeans --output output/clustering_kmeans
+.venv/bin/python -m extension.clustering.pipeline --method kmeans --output output/clustering_kmeans
 ```
 
 ## Representation and grouping
@@ -49,8 +49,8 @@ Install the optional dependency in `requirements-embeddings.txt` and provide a
 local Sentence Transformers checkpoint (including tokenizer/config/weights):
 
 ```bash
-.venv/bin/python -m pip install -r src/analysis/kalshi/clustering/requirements-embeddings.txt
-.venv/bin/python -m src.analysis.kalshi.clustering.pipeline \
+.venv/bin/python -m pip install -r extension/clustering/requirements-embeddings.txt
+.venv/bin/python -m extension.clustering.pipeline \
   --backend sentence --model /absolute/path/to/checkpoint \
   --output output/clustering_sentence
 ```
@@ -90,7 +90,7 @@ Generate an offline browser containing **all assignments**, including rejected
 contracts (about 60 MB for the current run; allow a moment to load):
 
 ```bash
-.venv/bin/python -m src.analysis.kalshi.clustering.viewer
+.venv/bin/python -m extension.clustering.viewer
 ```
 
 Open `output/clustering/title-review.html` in your browser. No server, external

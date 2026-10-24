@@ -189,7 +189,7 @@ Similarity or structural grouping cannot eliminate sampling noise or identify a 
 
 ```bash
 # Requires the audited baseline statistics from the previous analysis.
-.venv/bin/python -m src.analysis.kalshi.clustering.mispricing.structural
+.venv/bin/python -m extension.clustering.mispricing.structural
 ```
 
 The new results are under `results/structural/`; the learned-cluster results remain intact.

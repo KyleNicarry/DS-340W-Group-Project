@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Application code lives under `src/`. Put shared helpers in `src/common/`, platform collectors in `src/indexers/{kalshi,polymarket}/`, and analyses in `src/analysis/{kalshi,polymarket,comparison}/`. `main.py` is the interactive CLI entry point. Tests and fixtures are in `tests/`; documentation is in `docs/`. Downloaded Parquet datasets go in `data/`, and generated figures, CSV, and JSON files go in `output/`; treat both as generated artifacts.
+The inherited framework lives under `src/`; team research extensions live under `extension/`, including CSV clustering and mispricing in `extension/clustering/`. Put shared helpers in `src/common/`, platform collectors in `src/indexers/{kalshi,polymarket}/`, and analyses in `src/analysis/{kalshi,polymarket,comparison}/`. `main.py` is the interactive CLI entry point. Tests and fixtures are in `tests/`; documentation is in `docs/`. Downloaded Parquet datasets go in `data/`, and generated figures, CSV, and JSON files go in `output/`; treat both as generated artifacts.
 
 ## Build, Test, and Development Commands
 

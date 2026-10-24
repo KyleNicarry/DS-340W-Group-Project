@@ -517,9 +517,9 @@ next checks before treating any observed wedge difference as a predictive signal
 ## Reproduce and inspect
 
 ```bash
-.venv/bin/python -m src.analysis.kalshi.clustering.mispricing.pipeline
+.venv/bin/python -m extension.clustering.mispricing.pipeline
 # Avoid rescanning raw CSVs if audited input file metadata are unchanged:
-.venv/bin/python -m src.analysis.kalshi.clustering.mispricing.pipeline --reuse-stats
+.venv/bin/python -m extension.clustering.mispricing.pipeline --reuse-stats
 ```
 
 Read [cluster_summary.csv](results/cluster_summary.csv) for all groups, supports, event/market errors,

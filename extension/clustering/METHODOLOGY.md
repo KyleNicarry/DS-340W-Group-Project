@@ -336,21 +336,21 @@ From the repository root, using the project's installed environment:
 
 ```bash
 # Default LSA + hierarchical workflow; replaces named outputs in this directory.
-.venv/bin/python -m src.analysis.kalshi.clustering.pipeline
+.venv/bin/python -m extension.clustering.pipeline
 
 # Generate the data-bearing viewer after a successful run.
-.venv/bin/python -m src.analysis.kalshi.clustering.viewer
+.venv/bin/python -m extension.clustering.viewer
 
 # Matched k-means comparison in a separate directory.
-.venv/bin/python -m src.analysis.kalshi.clustering.pipeline \
+.venv/bin/python -m extension.clustering.pipeline \
   --method kmeans --output output/clustering_kmeans
 
 # Focused correctness checks.
-.venv/bin/python -m pytest tests/clustering -q
+.venv/bin/python -m pytest tests/extension/clustering -q
 ```
 
 Open **`output/clustering/title-review.html`**, not the source template at
-`src/analysis/kalshi/clustering/viewer.html`. Check `completed: true` in the run
+`extension/clustering/viewer.html`. Check `completed: true` in the run
 manifest before interpreting generated tables as a completed analysis.
 
 Default settings are initial engineering choices, not tuned or validated optimums.
@@ -387,4 +387,4 @@ established by these clusters.
 - [Loading, representation, grouping and output generation](pipeline.py)
 - [Viewer generator](viewer.py)
 - [Commands and review instructions](README.md)
-- [Focused tests](../../../../tests/clustering/)
+- [Focused tests](../../tests/extension/clustering/)

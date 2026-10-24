@@ -2,6 +2,10 @@
 
 This extension estimates **group-by-cost-band YES/NO mispricing differences**, never an observed contract-level wedge. Its purpose is to test whether similarities in early market activity and question wording help predict these constructed labels. Read [FINDINGS.md](results/FINDINGS.md) for the delivered run and [DATA_AVAILABILITY.md](DATA_AVAILABILITY.md) for field-level limitations.
 
+## Related CSV workflow
+
+The newer [structured clustering and mispricing workflow](clustering/README.md) uses prepared train/validation/test CSVs. Its [data preparation instructions](../scripts/README.md) and [findings](clustering/mispricing/FINDINGS.md) are separate from the Parquet-based pipeline below.
+
 ## Run
 
 From `DS-340W-Group-Project` with Python 3.9:

@@ -7,6 +7,7 @@ The repository contains the inherited data collection and analysis framework, ou
 ## Start here
 
 - **Our research:** [methodology and run instructions](extension/README.md), [findings and figures](extension/results/FINDINGS.md), and [data limitations](extension/DATA_AVAILABILITY.md).
+- **Structured CSV analysis:** [contract clustering and title review](extension/clustering/README.md), [mispricing results](extension/clustering/mispricing/FINDINGS.md), and [data preparation](scripts/README.md).
 - **Article replication:** [workflow and sources](replication/README.md).
 - **Inherited framework:** [original documentation](docs/upstream.md), [data schemas](docs/SCHEMAS.md), and [writing analyses](docs/ANALYSIS.md).
 
@@ -40,11 +41,11 @@ extension/                Our clustering, wedge estimation, models, and reports
 replication/              Our workflow for reproducing the original article
 tests/                   Framework and extension correctness tests
 data/                     Shared input datasets
-output/                   Inherited analysis figures and replication output
+output/                   Framework, CSV clustering, and replication output
 docs/                    Framework documentation and contribution history
 ```
 
-The inherited framework writes analysis outputs to `output/`; article builds write to `output/pdf/`. Extension results live separately in `extension/results/`. The directory formerly named `mvp/` is now `extension/`; use `python -m extension.pipeline` for new runs.
+The inherited framework writes analysis outputs to `output/`; article builds write to `output/pdf/`. The original extension results live in `extension/results/`; CSV clustering writes to `output/clustering/`, and its mispricing workflow writes to `extension/clustering/mispricing/results/`. The directory formerly named `mvp/` is now `extension/`; use `python -m extension.pipeline` for new runs.
 
 ## Attribution and license
 

@@ -8,9 +8,9 @@ and interpretation. This workflow follows the original paper's exact-price
 YES/NO calibration contrast; it does not use the MVP.
 
 ```bash
-.venv/bin/python -m src.analysis.kalshi.clustering.mispricing.pipeline
+.venv/bin/python -m extension.clustering.mispricing.pipeline
 # Reuse audited sufficient statistics if input metadata match:
-.venv/bin/python -m src.analysis.kalshi.clustering.mispricing.pipeline --reuse-stats
+.venv/bin/python -m extension.clustering.mispricing.pipeline --reuse-stats
 ```
 
 Inputs are the recent-year CSV master markets/trades and the frozen clustering
@@ -51,7 +51,7 @@ make normal-approximation inference unreliable. No trading or causal claim follo
 only domain/underlying/structure rules, without text encoding or learned clusters:
 
 ```bash
-.venv/bin/python -m src.analysis.kalshi.clustering.mispricing.structural
+.venv/bin/python -m extension.clustering.mispricing.structural
 ```
 
 It recomputes labels from the master CSV, reuses the validated execution sufficient
