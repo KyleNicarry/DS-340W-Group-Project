@@ -9,7 +9,7 @@ from argparse import Namespace
 import numpy as np
 import pandas as pd
 
-from mvp.pipeline import bootstrap_wedge, exact_estimate, linguistic_features, prepare, split_series
+from extension.pipeline import bootstrap_wedge, exact_estimate, linguistic_features, prepare, split_series
 
 
 def test_exact_cost_matching_removes_composition_confounding():
@@ -112,7 +112,7 @@ def test_prepare_enforces_landmark_and_deduplicates(tmp_path):
 
 
 def test_group_labels_never_pool_train_and_test_outcomes(tmp_path):
-    from mvp.pipeline import LANGUAGE, MARKET, build_labels
+    from extension.pipeline import LANGUAGE, MARKET, build_labels
 
     records, counts = [], []
     for split in ["train", "test"]:

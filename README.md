@@ -1,121 +1,51 @@
-# Prediction Market Analysis
+# Prediction Market Research — DS 340W
 
-A framework for analyzing prediction market data, including the largest publicly available dataset of Polymarket and Kalshi market and trade data. Provides tools for data collection, storage, and running analysis scripts that generate figures and statistics.
+This project extends Jonathan Becker’s [prediction-market-analysis repository](https://github.com/jon-becker/prediction-market-analysis) and research, *The Microstructure of Wealth Transfer in Prediction Markets*. Our research asks whether similarities in early market activity and question wording help predict group-level YES/NO mispricing differences (the “optimism-tax” wedge) in Kalshi markets.
 
-## Overview
+The repository contains the inherited data collection and analysis framework, our article replication workflow, and our research extension. See [contributions and provenance](docs/contributions.md) for the boundary between upstream work and our additions.
 
-This project enables research and analysis of prediction markets by providing:
-- Pre-collected datasets from Polymarket and Kalshi
-- Data collection indexers for gathering new data
-- Analysis framework for generating figures and statistics
+## Start here
 
-Currently supported features:
-- Market metadata collection (Kalshi & Polymarket)
-- Trade history collection via API and blockchain
-- Parquet-based storage with automatic progress saving
-- Extensible analysis script framework
+- **Our research:** [methodology and run instructions](extension/README.md), [findings and figures](extension/results/FINDINGS.md), and [data limitations](extension/DATA_AVAILABILITY.md).
+- **Article replication:** [workflow and sources](replication/README.md).
+- **Inherited framework:** [original documentation](docs/upstream.md), [data schemas](docs/SCHEMAS.md), and [writing analyses](docs/ANALYSIS.md).
 
-## Installation & Usage
+The extension estimates constructed group-by-cost-band labels, not observed contract-level wedges. Its evaluation is a retrospective unseen-series holdout, not a chronological trading backtest. Read the methodology and limitations before interpreting the results.
 
-Requires Python 3.9+. Install dependencies with [uv](https://github.com/astral-sh/uv):
+## Run the extension
+
+Run all commands from the repository root. Install the project and development dependencies with [uv](https://github.com/astral-sh/uv):
 
 ```bash
 uv sync
+uv run python -m extension.pipeline
 ```
 
-Download and extract the pre-collected dataset (36GiB compressed):
+Inputs must already exist at `data/kalshi/{markets,trades}/*.parquet`. The pipeline does not download data. For the inherited dataset download and collection commands, see [upstream setup](docs/upstream.md#installation--usage). A separate virtual-environment setup is documented in the [extension instructions](extension/README.md).
+
+The default run writes to `extension/results/` and replaces outputs with the same names. Full runs can take several minutes and several GB of memory and disk. To check the extension without running the full research pipeline:
 
 ```bash
-make setup
+uv run pytest tests/extension -q
 ```
 
-This downloads `data.tar.zst` from [Cloudflare R2 Storage](https://s3.jbecker.dev/data.tar.zst) and extracts it to `data/`.
+## Repository layout
 
-### Data Collection
-
-Collect market and trade data from prediction market APIs:
-
-```bash
-make index
+```text
+README.md                 Project overview and navigation
+src/                      Inherited analysis, indexers, and shared utilities
+main.py                   Inherited framework entry point
+extension/                Our clustering, wedge estimation, models, and reports
+    results/              Delivered extension findings, figures, and tables
+replication/              Our workflow for reproducing the original article
+tests/                   Framework and extension correctness tests
+data/                     Shared input datasets
+output/                   Inherited analysis figures and replication output
+docs/                    Framework documentation and contribution history
 ```
 
-This opens an interactive menu to select which indexer to run. Data is saved to `data/kalshi/` and `data/polymarket/` directories. Progress is saved automatically, so you can interrupt and resume collection.
+The inherited framework writes analysis outputs to `output/`; article builds write to `output/pdf/`. Extension results live separately in `extension/results/`. The directory formerly named `mvp/` is now `extension/`; use `python -m extension.pipeline` for new runs.
 
-### Running Analyses
+## Attribution and license
 
-```bash
-make analyze
-```
-
-This opens an interactive menu to select which analysis to run. You can run all analyses or select a specific one. Output files (PNG, PDF, CSV, JSON) are saved to `output/`.
-
-### Packaging Data
-
-To compress the data directory for storage/distribution:
-
-```bash
-make package
-```
-
-This creates a zstd-compressed tar archive (`data.tar.zst`) and removes the `data/` directory.
-
-## Project Structure
-
-```
-├── src/
-│   ├── analysis/           # Analysis scripts
-│   │   ├── kalshi/         # Kalshi-specific analyses
-│   │   └── polymarket/     # Polymarket-specific analyses
-│   ├── indexers/           # Data collection indexers
-│   │   ├── kalshi/         # Kalshi API client and indexers
-│   │   └── polymarket/     # Polymarket API/blockchain indexers
-│   └── common/             # Shared utilities and interfaces
-├── data/                   # Data directory (extracted from data.tar.zst)
-│   ├── kalshi/
-│   │   ├── markets/
-│   │   └── trades/
-│   └── polymarket/
-│       ├── blocks/
-│       ├── markets/
-│       └── trades/
-├── docs/                   # Documentation
-└── output/                 # Analysis outputs (figures, CSVs)
-```
-
-## Documentation
-
-- [Data Schemas](docs/SCHEMAS.md) - Parquet file schemas for markets and trades
-- [Writing Analyses](docs/ANALYSIS.md) - Guide for writing custom analysis scripts
-
-## Contributing
-
-If you'd like to contribute to this project, please open a pull-request with your changes, as well as detailed information on what is changed, added, or improved.
-
-For more information, see the [contributing guide](CONTRIBUTING.md).
-
-## Issues
-
-If you've found an issue or have a question, please open an issue [here](https://github.com/jon-becker/prediction-market-analysis/issues).
-
-## Research & Citations
-
-- Becker, J. (2026). _The Microstructure of Wealth Transfer in Prediction Markets_. Jbecker. https://jbecker.dev/research/prediction-market-microstructure
-- Becker, J. (2026). _The Microstructure of Wealth Transfer in Prediction Markets_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7217640
-- Le, N. A. (2026). _Decomposing Crowd Wisdom: Domain-Specific Calibration Dynamics in Prediction Markets_. arXiv. https://arxiv.org/abs/2602.19520
-- Akey P., Gregoire, V., Harvie, N., Martineau, C. (2026). _Who Wins and Who Loses In Prediction Markets? Evidence from Polymarket_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6443103
-- Vedova, J. (2026). _Who Profits from Prediction Markets? Execution, not Information_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6191618
-- Brown, A. (2026). _Cassandra Or the Boy Who Cried Wolf? Are Prediction Markets Effective Early Warning Systems?_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6381538
-- Cao, D. (2026). _Retail-Adjusted Expected Value in Prediction Markets: Calibration, Longshot Bias, and Consumer Welfare_. SSRN. https://papers.ssrn.com/sol3/Delivery.cfm/7049119.pdf?abstractid=7049119&mirid=1
-- Adamczewski, M. (2026). _Integration Without Leadership: Cross-Venue Price Discovery in UFC Prediction Markets_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7194218
-- Reichenbach, F., Walther, M. (2025). _Exploring Decentralized Prediction Markets: Accuracy, Skill, and Bias on Polymarket_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5910522
-- Bartlett, R., O'Hara, M. (2026). _Adverse Selection in Prediction Markets: Evidence from Kalshi_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6615739
-- Luong, K. L., Heesen, G. (2026). _The Wisdom of the Few: Skilled Traders and Prediction Market Accuracy_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6758662
-- Adegbenro, A. (2026). _What Prediction Markets Can See: Market Formation, Settlement Legibility, and the Geography of Tradable Uncertainty in Africa and Latin America_. arXiv. https://arxiv.org/abs/2606.17503
-- Mauboussin, M. J., Callahan, D. (2026). _The Wisdom of Crowds in Markets: Crowd Behavior in Prediction, Betting, and Stock Markets_. Morgan Stanley. https://www.morganstanley.com/content/dam/im/assets/publication/thought-leadership/consilient-observer/article_thewisdomofcrowds_ltr.pdf?1786370649511
-
-If you have used or plan to use this dataset in your research, please reach out via [email](mailto:jonathan@jbecker.dev) or [Twitter](https://x.com/BeckerrJon) -- i'd love to hear about what you're using the data for! Additionally, feel free to open a PR and update this section with a link to your paper.
-
-
-## Optimism-tax prediction MVP
-
-The contract-clustering research extension is in [mvp/README.md](mvp/README.md). It provides a reproducible real-data pipeline, exact-cost group-level wedge estimates, event-bootstrap uncertainty, grouped model evaluation, and [generated findings and figures](mvp/results/FINDINGS.md). See its data-provenance limitations before interpreting the retrospective holdout as a forecast.
+The inherited framework and dataset originate from Jonathan Becker and upstream contributors. The research extension and replication workflow are this project team’s additions; contributions by Kyle Nicarry and GitHub user `c-kva` belong to the extension work. See the [provenance record](docs/contributions.md) and retained [MIT license](LICENSE). The original documentation’s research bibliography is preserved in [docs/upstream.md](docs/upstream.md#research--citations).

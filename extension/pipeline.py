@@ -1,8 +1,8 @@
 """Reproducible, retrospective MVP of GROUP-level equal-cost YES/NO wedges.
 
-Run from the repository root: python -m mvp.pipeline
+Run from the repository root: python -m extension.pipeline
 This is deliberately separate from the original paper's replication code. Read
-mvp/README.md before interpreting results: snapshot text is not versioned, the
+extension/README.md before interpreting results: snapshot text is not versioned, the
 holdout is by series (not time), and a wedge is not a realizable trading return.
 """
 
@@ -678,7 +678,7 @@ def figures(labels, profiles, metrics, predictions, coefficients, rankings, out)
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=Path("data/kalshi"))
-    parser.add_argument("--output", type=Path, default=Path("mvp/results"))
+    parser.add_argument("--output", type=Path, default=Path("extension/results"))
     parser.add_argument("--max-contracts", type=int, default=60000)
     parser.add_argument("--window-hours", type=int, default=24)
     parser.add_argument("--min-early-trades", type=int, default=5)
@@ -753,7 +753,7 @@ def main():
             primary_rank,
             out,
         )
-    from mvp.report import write_findings
+    from extension.report import write_findings
 
     write_findings(out)
     manifest["elapsed_seconds"] = time.time() - start

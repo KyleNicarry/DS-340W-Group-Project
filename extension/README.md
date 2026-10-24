@@ -1,4 +1,4 @@
-# Predicting the optimism-tax wedge: reproducible MVP
+# Predicting the optimism-tax wedge: research extension
 
 This extension estimates **group-by-cost-band YES/NO mispricing differences**, never an observed contract-level wedge. Its purpose is to test whether similarities in early market activity and question wording help predict these constructed labels. Read [FINDINGS.md](results/FINDINGS.md) for the delivered run and [DATA_AVAILABILITY.md](DATA_AVAILABILITY.md) for field-level limitations.
 
@@ -7,18 +7,18 @@ This extension estimates **group-by-cost-band YES/NO mispricing differences**, n
 From `DS-340W-Group-Project` with Python 3.9:
 
 ```bash
-python3 -m venv .venv-mvp
-.venv-mvp/bin/python -m pip install -r mvp/requirements.txt
-.venv-mvp/bin/python -m mvp.pipeline
+python3 -m venv .venv-extension
+.venv-extension/bin/python -m pip install -r extension/requirements.txt
+.venv-extension/bin/python -m extension.pipeline
 ```
 
-The existing project `.venv` can also run `python -m mvp.pipeline` after installing these dependencies. Inputs must already exist at `data/kalshi/{markets,trades}/*.parquet`; there is no hidden download or live API call. Allow several minutes and several GB of RAM/disk for the full scan. DuckDB is capped at 3 GB with disk spill, four SQL threads and two numerical-library threads. Larger data can take longer.
+The existing project `.venv` can also run `python -m extension.pipeline` after installing these dependencies. Inputs must already exist at `data/kalshi/{markets,trades}/*.parquet`; there is no hidden download or live API call. Allow several minutes and several GB of RAM/disk for the full scan. DuckDB is capped at 3 GB with disk spill, four SQL threads and two numerical-library threads. Larger data can take longer.
 
 ```bash
 # Explicit, reproducible sensitivity run. Do not mix output directories.
-.venv-mvp/bin/python -m mvp.pipeline --clusters 12 --bootstrap 500 --output mvp/results_k12
+.venv-extension/bin/python -m extension.pipeline --clusters 12 --bootstrap 500 --output extension/results_k12
 # Core correctness tests (pytest is a development dependency).
-.venv/bin/python -m pytest tests/mvp -q
+.venv/bin/python -m pytest tests/extension -q
 ```
 
 All defaults and package versions are written to `results/run_manifest.json`, along with file paths, sizes, modification times and the pipeline's SHA-256. File metadata identify the local extract but are not cryptographic hashes of the large raw data. Seeds fix ticker sampling, series splits, clustering, models and bootstrap sampling; different BLAS/platform versions may yield small floating-point differences. `requirements.txt` pins direct analysis dependencies; the manifest records the numerical environment. The default invocation recomputes everything and replaces the same named outputs. Do not read an incomplete run as a completed analysis: check `completed: true` in its manifest.
@@ -120,3 +120,7 @@ The report `results/FINDINGS.md` is regenerated from output tables on every succ
 ## Next stage
 
 Acquire versioned question/metadata records, scheduled close histories and timestamps when outcomes became public. Rebuild a rolling chronological experiment in which all training outcomes were known before the next prediction cutoff, purging overlapping economic events across product series. Add a true event graph, category metadata and optional pinned sentence-transformer embeddings; validate clusters manually before outcomes are inspected. Test label sensitivity to uniform-contract versus execution weights, minimum-event counts, fixed exact-price support, opening-window length, cluster count and event/series bootstrap units. More contracts or a hierarchical model may improve precision, but shrinkage cannot cure missing historical provenance or poor economic grouping. Reserve a fresh test period before tuning. Only then add execution-aware maker simulations and cost/inventory constraints. A wording experiment holding the underlying event constant would be needed for causal claims.
+
+## Repository provenance
+
+This directory was renamed from `mvp/` to `extension/`. Existing run manifests and logs preserve their historical paths and source hashes; the rename does not regenerate results. See [contributions and provenance](../docs/contributions.md).
