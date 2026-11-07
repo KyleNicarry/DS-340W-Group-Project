@@ -1,0 +1,5 @@
+# Additional notebook tools; install project dependencies with uv sync first.
+jupyterlab>=4.3,<5
+ipykernel==6.31.0
+nbformat==5.10.4
+nbclient==0.10.2
