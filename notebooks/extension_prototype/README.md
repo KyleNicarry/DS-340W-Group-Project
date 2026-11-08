@@ -93,3 +93,10 @@ inference behavior for the production population.
 The core correctness suite is still `uv run pytest tests/extension -q`. A working
 notebook interface does not resolve the methodological limitations of the original
 extension or establish executable trading profits.
+
+## Completed CSV methodology
+
+The newer [completion walkthrough](../../extension/notebooks/README.md) follows
+the final CSV methodology through historical calibration transfer, supervised
+prediction and test evaluation. These earlier experimental notebooks remain
+separate interfaces to the original exploratory stages.

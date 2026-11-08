@@ -55,3 +55,9 @@ provenance. The report describes every artifact and limitation.
 make test
 make lint
 ```
+
+## Notebook walkthrough
+
+The [completion notebooks](../../notebooks/README.md) explain the complete CSV
+extension in four stages, with real-artifact review by default and isolated
+recomputation of the prediction/evaluation functions.

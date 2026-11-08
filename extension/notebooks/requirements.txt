@@ -1,0 +1,2 @@
+# Install the locked project environment first: uv sync
+-r ../../notebooks/extension_prototype/requirements.txt
