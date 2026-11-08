@@ -124,3 +124,14 @@ The [mispricing analysis](mispricing/README.md) reruns the original paper's
 same-cost YES/NO comparison on the recent-year CSVs, with matched pooled baselines,
 event/market uncertainty, and checks of variation within structural families.
 See its [findings report](mispricing/FINDINGS.md) for the completed results.
+
+## Supervised mispricing prediction
+
+The [historical-transfer and supervised workflow](supervised/README.md) first
+compares smoothed training-set calibration at pooled, structural-family and NLP-cluster
+levels, then compares these baselines with supervised regressors. It evaluates pooled,
+structural-only and structural + NLP cluster models using the original CSV
+train/validation/test membership. Read the [results report](supervised/REPORT.md)
+for Brier scores, matched-cost YES/NO wedges, event/series uncertainty, corrected
+subgroup screening and data-quality limitations. Generated predictions and tables
+stay under the ignored `supervised/results/` directory.
