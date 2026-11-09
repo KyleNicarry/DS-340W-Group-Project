@@ -8,7 +8,7 @@ The repository contains the inherited data collection and analysis framework, ou
 
 - **Our research:** [methodology and run instructions](extension/README.md), [findings and figures](extension/results/FINDINGS.md), and [data limitations](extension/DATA_AVAILABILITY.md).
 - **Structured CSV analysis:** [contract clustering and title review](extension/clustering/README.md), [mispricing results](extension/clustering/mispricing/FINDINGS.md), and [data preparation](scripts/README.md).
-- **Notebook prototypes:** [full pipeline](notebooks/extension_prototype/F_full_pipeline.ipynb) and [modular walkthrough](notebooks/extension_prototype/README.md).
+- **Notebook prototypes:** [full pipeline](notebooks/extension_prototype/full_pipeline.ipynb) and [modular walkthrough](notebooks/extension_prototype/README.md).
 - **Inherited framework:** [original documentation](docs/upstream.md), [data schemas](docs/SCHEMAS.md), and [writing analyses](docs/ANALYSIS.md).
 
 The extension estimates constructed group-by-cost-band labels, not observed contract-level wedges. Its evaluation is a retrospective unseen-series holdout, not a chronological trading backtest. Read the methodology and limitations before interpreting the results.
