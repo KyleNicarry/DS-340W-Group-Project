@@ -1,145 +1,92 @@
-# Prediction Market Analysis
+# Prediction Market Mispricing — DS 340W
 
-A framework for analyzing prediction market data, including the largest publicly available dataset of Polymarket and Kalshi market and trade data. Provides tools for data collection, storage, and running analysis scripts that generate figures and statistics.
+We build on Jonathan Becker's *The Microstructure of Wealth Transfer in Prediction Markets*. Becker studies systematic mispricing across Kalshi. Our extension asks whether finer groups of similar contracts help predict mispricing on held-out events.
 
-## Team research notebooks
+The project has two notebooks:
 
-Our DS 340W work builds on Jonathan Becker's research and the inherited framework below. The inherited baseline is commit `2276382`; our two notebooks and CSV preparation utility are team additions.
+| Notebook | Purpose |
+| --- | --- |
+| [replication.ipynb](extension/notebooks/replication.ipynb) | Reproduce Becker's calibration, longshot, YES/NO, and maker/taker checks on our recent-year CSV subset. |
+| [main.ipynb](extension/notebooks/main.ipynb) | Compare pooled predictions with predictions that include structural and text-based contract groups. |
 
-- [Replication](extension/notebooks/replication.ipynb): reproduce Becker's descriptive mispricing checks on our recent-year CSV subset.
-- [Extension](extension/notebooks/main.ipynb): test whether structural and text-based contract groups improve mispricing predictions over a pooled model.
+Both include explanations, figures, and saved results. They run independently; reading the replication first provides context for the extension. Becker's original setup, framework documentation, and bibliography are preserved in [README_UPSTREAM.md](README_UPSTREAM.md).
 
-### Run the notebooks
+## Setup
 
-From the repository root:
+Use Python 3.9 and `uv`, matching the project's `.python-version` and locked environment. From the repository root:
 
 ```bash
 uv sync
-uv pip install -r extension/notebooks/requirements.txt
-uv run jupyter lab extension/notebooks/
+uv pip install --python .venv/bin/python -r extension/notebooks/requirements.txt
+uv run --no-sync jupyter lab extension/notebooks/
 ```
 
-Select the project's Python environment and run each notebook from top to bottom. They can run independently. The replication uses the master CSVs and manifest; the extension also uses the train, validation, and test market CSVs under `data/kalshi_recent_year_csv/`.
+Open either notebook, select the project's Python environment, and run all cells from top to bottom. In VS Code, select `.venv/bin/python` as the notebook kernel. Run from the repository or a subdirectory so the notebooks can locate the inputs.
 
-If the CSVs are not available, first obtain the inherited Kalshi Parquet data using the setup instructions below, then run:
+The CSVs contain roughly 65 million trades. The notebooks use DuckDB to summarize them before loading smaller tables into memory; allow several GB of RAM and sufficient disk space for the input files and temporary data.
+
+## Data
+
+The delivered analysis uses trades from November 25, 2024 through November 25, 2025. Data files are ignored by Git and must be available locally:
+
+```text
+data/kalshi_recent_year_csv/
+├── master/
+│   ├── markets.csv
+│   └── trades.csv
+├── split/
+│   ├── train/markets.csv
+│   ├── validation/markets.csv
+│   └── test/markets.csv
+└── manifest.json
+```
+
+The replication uses the master CSVs and manifest. The extension also uses the market files defining the event splits. The builder exports trade CSVs for each split too, but the notebooks read trades from the master file.
+
+If the CSVs are missing, obtain the original Kalshi Parquets using [Becker's setup instructions](README_UPSTREAM.md#installation--usage), then run:
 
 ```bash
 uv run python scripts/build_kalshi_recent_year_csv.py
 ```
 
-See [CSV preparation](scripts/README.md) for the sample window and split method. Figures and tables are written to `output/replication/` and `output/extension_notebook_simple/`. Data and generated outputs are ignored by Git; the notebooks retain their displayed results.
+The builder selects the latest year in its input data and refuses to overwrite an existing output directory. A different raw extract can therefore produce a different sample. See [CSV preparation](scripts/README.md) for the window, event split rules, and reproducibility details.
 
-The sample-restricted replication and predictive extension are separate analyses. Neither notebook is a fee-adjusted trading backtest. Becker's research, code, and original documentation remain attributed to their authors; the inherited MIT license is retained.
+## Our extension
 
-## Overview
+We predict the mispricing residual: **resolved YES outcome − observed YES price**, with price expressed as a probability. This builds on Becker's calibration-based mispricing measure. Mispricing and return on capital are distinct measures; the replication labels both explicitly.
 
-This project enables research and analysis of prediction markets by providing:
-- Pre-collected datasets from Polymarket and Kalshi
-- Data collection indexers for gathering new data
-- Analysis framework for generating figures and statistics
+We compare one shared ridge model per feature set:
 
-Currently supported features:
-- Market metadata collection (Kalshi & Polymarket)
-- Trade history collection via API and blockchain
-- Parquet-based storage with automatic progress saving
-- Extensible analysis script framework
+| Approach | Features |
+| --- | --- |
+| Pooled | Price, price squared, and price cubed |
+| Structural | Price terms plus structural family membership |
+| Structural + NLP | Price terms plus family and text-cluster membership |
 
-## Installation & Usage
+Structural families group contracts by domain/category, series, and proposition structure. Within families, TF-IDF and LSA represent the wording, and hierarchical clustering forms finer groups. Text representations and clusters are learned from training contracts; validation and test contracts use the frozen assignments. Group membership enters the model as categorical features.
 
-Requires Python 3.9+. Install dependencies with [uv](https://github.com/astral-sh/uv):
+Pooled is the main modeling baseline. Uncorrected market price is a separate benchmark that makes no fitted adjustment. We add each model's predicted residual to price, clip the resulting probability to [0, 1], and evaluate execution-weighted Brier score on identical test observations. Lower scores are better. Event-bootstrap intervals compare models, and a top-K diagnostic checks performance in clusters with the most training-event support.
 
-```bash
-uv sync
-```
+The splits keep events together but are not chronological. Results are exploratory: this dataset informed earlier methodology revisions, and the analysis does not test fee-adjusted trading profits. The replication is restricted to our sample and cannot reproduce Becker's full historical coverage or every reported estimate.
 
-Download and extract the pre-collected dataset (36GiB compressed):
+## Outputs and checks
 
-```bash
-make setup
-```
+Running the notebooks writes figures, tables, and run manifests to:
 
-This downloads `data.tar.zst` from [Cloudflare R2 Storage](https://s3.jbecker.dev/data.tar.zst) and extracts it to `data/`.
+- `output/replication/`
+- `output/extension_notebook_simple/`
 
-### Data Collection
-
-Collect market and trade data from prediction market APIs:
+Generated outputs are ignored by Git. The notebooks retain displayed results for review.
 
 ```bash
-make index
+make test
+make lint
 ```
 
-This opens an interactive menu to select which indexer to run. Data is saved to `data/kalshi/` and `data/polymarket/` directories. Progress is saved automatically, so you can interrupt and resume collection.
+The tests cover the inherited framework and CSV preparation. The notebooks also check data consistency during execution.
 
-### Running Analyses
+## Attribution
 
-```bash
-make analyze
-```
+The inherited baseline is commit `2276382` of Jonathan Becker's [prediction-market-analysis](https://github.com/jon-becker/prediction-market-analysis). Its code remains under `src/`, with its original tooling, documentation, and tests. Our additions are the two notebooks, CSV preparation utility and tests, and supporting setup documentation.
 
-This opens an interactive menu to select which analysis to run. You can run all analyses or select a specific one. Output files (PNG, PDF, CSV, JSON) are saved to `output/`.
-
-### Packaging Data
-
-To compress the data directory for storage/distribution:
-
-```bash
-make package
-```
-
-This creates a zstd-compressed tar archive (`data.tar.zst`) and removes the `data/` directory.
-
-## Project Structure
-
-```
-├── src/
-│   ├── analysis/           # Analysis scripts
-│   │   ├── kalshi/         # Kalshi-specific analyses
-│   │   └── polymarket/     # Polymarket-specific analyses
-│   ├── indexers/           # Data collection indexers
-│   │   ├── kalshi/         # Kalshi API client and indexers
-│   │   └── polymarket/     # Polymarket API/blockchain indexers
-│   └── common/             # Shared utilities and interfaces
-├── data/                   # Data directory (extracted from data.tar.zst)
-│   ├── kalshi/
-│   │   ├── markets/
-│   │   └── trades/
-│   └── polymarket/
-│       ├── blocks/
-│       ├── markets/
-│       └── trades/
-├── docs/                   # Documentation
-└── output/                 # Analysis outputs (figures, CSVs)
-```
-
-## Documentation
-
-- [Data Schemas](docs/SCHEMAS.md) - Parquet file schemas for markets and trades
-- [Writing Analyses](docs/ANALYSIS.md) - Guide for writing custom analysis scripts
-
-## Contributing
-
-If you'd like to contribute to this project, please open a pull-request with your changes, as well as detailed information on what is changed, added, or improved.
-
-For more information, see the [contributing guide](CONTRIBUTING.md).
-
-## Issues
-
-If you've found an issue or have a question, please open an issue [here](https://github.com/jon-becker/prediction-market-analysis/issues).
-
-## Research & Citations
-
-- Becker, J. (2026). _The Microstructure of Wealth Transfer in Prediction Markets_. Jbecker. https://jbecker.dev/research/prediction-market-microstructure
-- Becker, J. (2026). _The Microstructure of Wealth Transfer in Prediction Markets_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7217640
-- Le, N. A. (2026). _Decomposing Crowd Wisdom: Domain-Specific Calibration Dynamics in Prediction Markets_. arXiv. https://arxiv.org/abs/2602.19520
-- Akey P., Gregoire, V., Harvie, N., Martineau, C. (2026). _Who Wins and Who Loses In Prediction Markets? Evidence from Polymarket_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6443103
-- Vedova, J. (2026). _Who Profits from Prediction Markets? Execution, not Information_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6191618
-- Brown, A. (2026). _Cassandra Or the Boy Who Cried Wolf? Are Prediction Markets Effective Early Warning Systems?_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6381538
-- Cao, D. (2026). _Retail-Adjusted Expected Value in Prediction Markets: Calibration, Longshot Bias, and Consumer Welfare_. SSRN. https://papers.ssrn.com/sol3/Delivery.cfm/7049119.pdf?abstractid=7049119&mirid=1
-- Adamczewski, M. (2026). _Integration Without Leadership: Cross-Venue Price Discovery in UFC Prediction Markets_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7194218
-- Reichenbach, F., Walther, M. (2025). _Exploring Decentralized Prediction Markets: Accuracy, Skill, and Bias on Polymarket_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5910522
-- Bartlett, R., O'Hara, M. (2026). _Adverse Selection in Prediction Markets: Evidence from Kalshi_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6615739
-- Luong, K. L., Heesen, G. (2026). _The Wisdom of the Few: Skilled Traders and Prediction Market Accuracy_. SSRN. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6758662
-- Adegbenro, A. (2026). _What Prediction Markets Can See: Market Formation, Settlement Legibility, and the Geography of Tradable Uncertainty in Africa and Latin America_. arXiv. https://arxiv.org/abs/2606.17503
-- Mauboussin, M. J., Callahan, D. (2026). _The Wisdom of Crowds in Markets: Crowd Behavior in Prediction, Betting, and Stock Markets_. Morgan Stanley. https://www.morganstanley.com/content/dam/im/assets/publication/thought-leadership/consilient-observer/article_thewisdomofcrowds_ltr.pdf?1786370649511
-
-If you have used or plan to use this dataset in your research, please reach out via [email](mailto:jonathan@jbecker.dev) or [Twitter](https://x.com/BeckerrJon) -- i'd love to hear about what you're using the data for! Additionally, feel free to open a PR and update this section with a link to your paper.
+See [Becker's original README and references](README_UPSTREAM.md) and the retained [MIT license](LICENSE).
