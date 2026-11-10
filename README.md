@@ -13,43 +13,57 @@ Both include explanations, figures, and saved results. They run independently; r
 
 ## Setup
 
-Use Python 3.9 and `uv`, matching the project's `.python-version` and locked environment. From the repository root:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and use a copy of this repository's `final` branch. From the repository root:
 
 ```bash
-uv sync
-uv pip install --python .venv/bin/python -r extension/notebooks/requirements.txt
-uv run --no-sync jupyter lab extension/notebooks/
+uv sync --locked --group notebooks
+uv run --locked --group notebooks python scripts/setup_data.py
+uv run --locked --group notebooks jupyter lab extension/notebooks/
 ```
 
-Open either notebook, select the project's Python environment, and run all cells from top to bottom. In VS Code, select `.venv/bin/python` as the notebook kernel. Run from the repository or a subdirectory so the notebooks can locate the inputs.
+`uv` uses the project's Python 3.9 version and installs the locked dependencies. The setup script downloads the shared dataset and prepares it for both notebooks. Then open either notebook, select the project's Python environment, and run all cells from top to bottom. In VS Code, select the `.venv` kernel (`.venv/bin/python` on macOS/Linux, `.venv\Scripts\python.exe` on Windows). Run from the repository or a subdirectory so the notebooks can locate the inputs.
 
-The CSVs contain roughly 65 million trades. The notebooks use DuckDB to summarize them before loading smaller tables into memory; allow several GB of RAM and sufficient disk space for the input files and temporary data.
+The dataset contains roughly 65 million trades. Allow at least 25 GB of free disk space for the downloads and extracted CSVs, plus room for notebook outputs and temporary data. The notebooks use DuckDB to summarize trades before loading smaller tables into memory; allow several GB of RAM.
 
 ## Data
 
-The delivered analysis uses trades from November 25, 2024 through November 25, 2025. Data files are ignored by Git and must be available locally:
+The delivered sample covers November 25, 2024 through November 25, 2025. `scripts/setup_data.py` downloads `raw_data.zip`, `split.zip`, and `manifest.json` from the [shared Google Drive folder](https://drive.google.com/drive/folders/1WOUfs-T62UJGP6rafvvSuSlxwAPmMFc8?usp=share_link). It verifies the downloaded files against the supplied sample's SHA-256 hashes, extracts the CSVs, and checks their columns and row counts against the manifest. Downloads are retained in `data/.kalshi_downloads/` and reused on later attempts.
+
+The script stages extraction before publishing the dataset. If `data/kalshi_recent_year_csv/` already exists, it checks its files and leaves them in place instead of overwriting them. To check an existing installation explicitly:
+
+```bash
+uv run --locked --group notebooks python scripts/setup_data.py --check
+```
+
+If automatic download fails, download the three files individually from the Drive folder into a separate directory and run the same verification and extraction steps locally:
+
+```bash
+uv run --locked --group notebooks python scripts/setup_data.py --from-dir /path/to/downloads
+```
+
+For a separate installation, add `--output /path/to/new/dataset`. The notebooks expect the default location shown below; the custom output is useful for checking or preparing a second copy. A partial or different existing dataset is never overwritten: use a new output location or move the existing directory yourself before retrying.
 
 ```text
 data/kalshi_recent_year_csv/
-├── master/
-│   ├── markets.csv
-│   └── trades.csv
+├── master/{markets,trades}.csv
 ├── split/
-│   ├── train/markets.csv
-│   ├── validation/markets.csv
-│   └── test/markets.csv
+│   ├── train/{markets,trades}.csv
+│   ├── validation/{markets,trades}.csv
+│   └── test/{markets,trades}.csv
 └── manifest.json
 ```
 
-The replication uses the master CSVs and manifest. The extension also uses the market files defining the event splits. The builder exports trade CSVs for each split too, but the notebooks read trades from the master file.
+The replication uses the master CSVs and manifest. The extension also uses the market files defining the event splits; it reads trades from the master file. Data and generated output are ignored by Git.
 
-If the CSVs are missing, obtain the original Kalshi Parquets using [Becker's setup instructions](README_UPSTREAM.md#installation--usage), then run:
+### Optional: rebuild from the original data
+
+To create a new extract instead of downloading the prepared sample, obtain the original Kalshi Parquets using [Becker's setup instructions](README_UPSTREAM.md#installation--usage), then run:
 
 ```bash
-uv run python scripts/build_kalshi_recent_year_csv.py
+uv run --locked --group notebooks python scripts/build_kalshi_recent_year_csv.py
 ```
 
-The builder selects the latest year in its input data and refuses to overwrite an existing output directory. A different raw extract can therefore produce a different sample. See [CSV preparation](scripts/README.md) for the window, event split rules, and reproducibility details.
+The builder selects the latest year in its input data and refuses to overwrite an existing output directory. It writes its own manifest. A different raw extract can produce a different sample. See [CSV preparation](scripts/README.md) for the window, split rules, and reproducibility details.
 
 ## Our extension
 

@@ -1,5 +1,9 @@
 # Kalshi CSV preparation
 
+To download and validate the sample used by the delivered notebooks, follow the [prepared-data setup instructions](../README.md#data). `setup_data.py` downloads the two ZIPs and `manifest.json`, checks their hashes, and verifies the extracted CSVs against the manifest. If files are already installed, it checks them without overwriting them. Use `--from-dir` with the three browser-downloaded files if automatic download is unavailable.
+
+The builder below is an alternative for creating a new extract from Parquet data. It generates its own manifest.
+
 `build_kalshi_recent_year_csv.py` creates the inputs for both research notebooks from downloaded Kalshi Parquet files. Run it from the repository root after `uv sync`:
 
 ```bash
