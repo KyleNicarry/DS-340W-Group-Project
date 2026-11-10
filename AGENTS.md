@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-The inherited framework lives under `src/`; team research extensions live under `extension/`, including CSV clustering and mispricing in `extension/clustering/`. Put shared helpers in `src/common/`, platform collectors in `src/indexers/{kalshi,polymarket}/`, and analyses in `src/analysis/{kalshi,polymarket,comparison}/`. `main.py` is the interactive CLI entry point. Tests and fixtures are in `tests/`; documentation is in `docs/`. Downloaded Parquet datasets go in `data/`, and generated figures, CSV, and JSON files go in `output/`; treat both as generated artifacts.
+The inherited framework lives under `src/`. Team research is contained in `extension/notebooks/replication.ipynb` and `extension/notebooks/main.ipynb`; keep analysis code in those notebooks. The CSV input builder is `scripts/build_kalshi_recent_year_csv.py`, with preparation tests in `tests/test_data_preparation.py`. Preserve the inherited files from baseline commit `2276382`. Put shared helpers in `src/common/`, platform collectors in `src/indexers/{kalshi,polymarket}/`, and analyses in `src/analysis/{kalshi,polymarket,comparison}/`. `main.py` is the interactive CLI entry point. Tests and fixtures are in `tests/`; documentation is in `docs/`. Downloaded Parquet datasets go in `data/`, and generated figures, CSV, and JSON files go in `output/`; treat both as generated artifacts.
 
 ## Build, Test, and Development Commands
 
