@@ -1,52 +1,106 @@
-# Prediction Market Research — DS 340W
+# Prediction Market Mispricing — DS 340W
 
-This project extends Jonathan Becker’s [prediction-market-analysis repository](https://github.com/jon-becker/prediction-market-analysis) and research, *The Microstructure of Wealth Transfer in Prediction Markets*. Our research asks whether similarities in early market activity and question wording help predict group-level YES/NO mispricing differences (the “optimism-tax” wedge) in Kalshi markets.
+We build on Jonathan Becker's *The Microstructure of Wealth Transfer in Prediction Markets*. Becker studies systematic mispricing across Kalshi. Our extension asks whether finer groups of similar contracts help predict mispricing on held-out events.
 
-The repository contains the inherited data collection and analysis framework, our research extension, and notebook prototypes. See [contributions and provenance](docs/contributions.md) for the boundary between upstream work and our additions.
+The project has two notebooks:
 
-## Start here
+| Notebook | Purpose |
+| --- | --- |
+| [replication.ipynb](extension/notebooks/replication.ipynb) | Reproduce Becker's calibration, longshot, YES/NO, and maker/taker checks on our recent-year CSV subset. |
+| [main.ipynb](extension/notebooks/main.ipynb) | Compare pooled predictions with predictions that include structural and text-based contract groups. |
 
-- **Our research:** [methodology and run instructions](extension/README.md), [findings and figures](extension/results/FINDINGS.md), and [data limitations](extension/DATA_AVAILABILITY.md).
-- **Structured CSV analysis:** [contract clustering and title review](extension/clustering/README.md), [mispricing results](extension/clustering/mispricing/FINDINGS.md), and [data preparation](scripts/README.md).
-- **Notebook prototypes:** [full pipeline](notebooks/extension_prototype/full_pipeline.ipynb) and [modular walkthrough](notebooks/extension_prototype/README.md).
-- **Inherited framework:** [original documentation](docs/upstream.md), [data schemas](docs/SCHEMAS.md), and [writing analyses](docs/ANALYSIS.md).
+Both include explanations, figures, and saved results. They run independently; reading the replication first provides context for the extension. Becker's original setup, framework documentation, and bibliography are preserved in [README_UPSTREAM.md](README_UPSTREAM.md).
 
-The extension estimates constructed group-by-cost-band labels, not observed contract-level wedges. Its evaluation is a retrospective unseen-series holdout, not a chronological trading backtest. Read the methodology and limitations before interpreting the results.
+## Setup
 
-## Run the extension
-
-Run all commands from the repository root. Install the project and development dependencies with [uv](https://github.com/astral-sh/uv):
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and use a copy of this repository's `final` branch. From the repository root:
 
 ```bash
-uv sync
-uv run python -m extension.pipeline
+uv sync --locked --group notebooks
+uv run --locked --group notebooks python scripts/setup_data.py
+uv run --locked --group notebooks jupyter lab extension/notebooks/
 ```
 
-Inputs must already exist at `data/kalshi/{markets,trades}/*.parquet`. The pipeline does not download data. For the inherited dataset download and collection commands, see [upstream setup](docs/upstream.md#installation--usage). A separate virtual-environment setup is documented in the [extension instructions](extension/README.md).
+`uv` uses the project's Python 3.9 version and installs the locked dependencies. The setup script downloads the shared dataset and prepares it for both notebooks. Then open either notebook, select the project's Python environment, and run all cells from top to bottom. In VS Code, select the `.venv` kernel (`.venv/bin/python` on macOS/Linux, `.venv\Scripts\python.exe` on Windows). Run from the repository or a subdirectory so the notebooks can locate the inputs.
 
-The default run writes to `extension/results/` and replaces outputs with the same names. Full runs can take several minutes and several GB of memory and disk. To check the extension without running the full research pipeline:
+The dataset contains roughly 65 million trades. Allow at least 25 GB of free disk space for the downloads and extracted CSVs, plus room for notebook outputs and temporary data. The notebooks use DuckDB to summarize trades before loading smaller tables into memory; allow several GB of RAM.
+
+## Data
+
+The delivered sample covers November 25, 2024 through November 25, 2025. `scripts/setup_data.py` downloads `raw_data.zip`, `split.zip`, and `manifest.json` from the [shared Google Drive folder](https://drive.google.com/drive/folders/1WOUfs-T62UJGP6rafvvSuSlxwAPmMFc8?usp=share_link). It verifies the downloaded files against the supplied sample's SHA-256 hashes, extracts the CSVs, and checks their columns and row counts against the manifest. Downloads are retained in `data/.kalshi_downloads/` and reused on later attempts.
+
+The script stages extraction before publishing the dataset. If `data/kalshi_recent_year_csv/` already exists, it checks its files and leaves them in place instead of overwriting them. To check an existing installation explicitly:
 
 ```bash
-uv run pytest tests/extension -q
+uv run --locked --group notebooks python scripts/setup_data.py --check
 ```
 
-## Repository layout
+If automatic download fails, download the three files individually from the Drive folder into a separate directory and run the same verification and extraction steps locally:
+
+```bash
+uv run --locked --group notebooks python scripts/setup_data.py --from-dir /path/to/downloads
+```
+
+For a separate installation, add `--output /path/to/new/dataset`. The notebooks expect the default location shown below; the custom output is useful for checking or preparing a second copy. A partial or different existing dataset is never overwritten: use a new output location or move the existing directory yourself before retrying.
 
 ```text
-README.md                 Project overview and navigation
-src/                      Inherited analysis, indexers, and shared utilities
-main.py                   Inherited framework entry point
-extension/                Our clustering, wedge estimation, models, and reports
-    results/              Delivered extension findings, figures, and tables
-notebooks/                Team notebook prototypes
-tests/                    Framework and extension correctness tests
-data/                     Shared input datasets
-output/                   Generated framework and CSV analysis output
-docs/                    Framework documentation and contribution history
+data/kalshi_recent_year_csv/
+├── master/{markets,trades}.csv
+├── split/
+│   ├── train/{markets,trades}.csv
+│   ├── validation/{markets,trades}.csv
+│   └── test/{markets,trades}.csv
+└── manifest.json
 ```
 
-The inherited framework writes analysis outputs to `output/`. The original extension results live in `extension/results/`; CSV clustering writes to `output/clustering/`, and its mispricing workflow writes to `extension/clustering/mispricing/results/`. The directory formerly named `mvp/` is now `extension/`; use `python -m extension.pipeline` for new runs.
+The replication uses the master CSVs and manifest. The extension also uses the market files defining the event splits; it reads trades from the master file. Data and generated output are ignored by Git.
 
-## Attribution and license
+### Optional: rebuild from the original data
 
-The inherited framework and dataset originate from Jonathan Becker and upstream contributors. The research extension and notebook prototypes are this project team’s additions; contributions by Kyle Nicarry and GitHub user `c-kva` belong to the extension work. See the [provenance record](docs/contributions.md) and retained [MIT license](LICENSE). The original documentation’s research bibliography is preserved in [docs/upstream.md](docs/upstream.md#research--citations).
+To create a new extract instead of downloading the prepared sample, obtain the original Kalshi Parquets using [Becker's setup instructions](README_UPSTREAM.md#installation--usage), then run:
+
+```bash
+uv run --locked --group notebooks python scripts/build_kalshi_recent_year_csv.py
+```
+
+The builder selects the latest year in its input data and refuses to overwrite an existing output directory. It writes its own manifest. A different raw extract can produce a different sample. See [CSV preparation](scripts/README.md) for the window, split rules, and reproducibility details.
+
+## Our extension
+
+We predict the mispricing residual: **resolved YES outcome − observed YES price**, with price expressed as a probability. This builds on Becker's calibration-based mispricing measure. Mispricing and return on capital are distinct measures; the replication labels both explicitly.
+
+We compare one shared ridge model per feature set:
+
+| Approach | Features |
+| --- | --- |
+| Pooled | Price, price squared, and price cubed |
+| Structural | Price terms plus structural family membership |
+| Structural + NLP | Price terms plus family and text-cluster membership |
+
+Structural families group contracts by domain/category, series, and proposition structure. Within families, TF-IDF and LSA represent the wording, and hierarchical clustering forms finer groups. Text representations and clusters are learned from training contracts; validation and test contracts use the frozen assignments. Group membership enters the model as categorical features.
+
+Pooled is the main modeling baseline. Uncorrected market price is a separate benchmark that makes no fitted adjustment. We add each model's predicted residual to price, clip the resulting probability to [0, 1], and evaluate execution-weighted Brier score on identical test observations. Lower scores are better. Event-bootstrap intervals compare models, and a top-K diagnostic checks performance in clusters with the most training-event support.
+
+The splits keep events together but are not chronological. Results are exploratory: this dataset informed earlier methodology revisions, and the analysis does not test fee-adjusted trading profits. The replication is restricted to our sample and cannot reproduce Becker's full historical coverage or every reported estimate.
+
+## Outputs and checks
+
+Running the notebooks writes figures, tables, and run manifests to:
+
+- `output/replication/`
+- `output/extension_notebook_simple/`
+
+Generated outputs are ignored by Git. The notebooks retain displayed results for review.
+
+```bash
+make test
+make lint
+```
+
+The tests cover the inherited framework and CSV preparation. The notebooks also check data consistency during execution.
+
+## Attribution
+
+The inherited baseline is commit `2276382` of Jonathan Becker's [prediction-market-analysis](https://github.com/jon-becker/prediction-market-analysis). Its code remains under `src/`, with its original tooling, documentation, and tests. Our additions are the two notebooks, CSV preparation utility and tests, and supporting setup documentation.
+
+See [Becker's original README and references](README_UPSTREAM.md) and the retained [MIT license](LICENSE).

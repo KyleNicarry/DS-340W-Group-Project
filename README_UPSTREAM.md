@@ -1,5 +1,3 @@
-> Preserved documentation from the inherited prediction-market analysis framework. Commands below run from the repository root. For this team’s research, see the [project overview](../README.md).
-
 # Prediction Market Analysis
 
 A framework for analyzing prediction market data, including the largest publicly available dataset of Polymarket and Kalshi market and trade data. Provides tools for data collection, storage, and running analysis scripts that generate figures and statistics.
@@ -86,14 +84,14 @@ This creates a zstd-compressed tar archive (`data.tar.zst`) and removes the `dat
 
 ## Documentation
 
-- [Data Schemas](SCHEMAS.md) - Parquet file schemas for markets and trades
-- [Writing Analyses](ANALYSIS.md) - Guide for writing custom analysis scripts
+- [Data Schemas](docs/SCHEMAS.md) - Parquet file schemas for markets and trades
+- [Writing Analyses](docs/ANALYSIS.md) - Guide for writing custom analysis scripts
 
 ## Contributing
 
 If you'd like to contribute to this project, please open a pull-request with your changes, as well as detailed information on what is changed, added, or improved.
 
-For more information, see the [contributing guide](../CONTRIBUTING.md).
+For more information, see the [contributing guide](CONTRIBUTING.md).
 
 ## Issues
 
