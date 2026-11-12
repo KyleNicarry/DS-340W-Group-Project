@@ -13,7 +13,7 @@ Both include explanations, figures, and saved results. They run independently; r
 
 ## Setup
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and use a copy of this repository's `final` branch. From the repository root:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and use a copy of this repository's `main` branch. From the repository root:
 
 ```bash
 uv sync --locked --group notebooks
